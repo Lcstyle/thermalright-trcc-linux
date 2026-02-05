@@ -203,6 +203,7 @@ Categories by filename prefix: a=Gallery, b=Tech, c=HUD, d=Light, e=Nature, y=Ae
 
 ## See Also
 
+- `doc/PORTING_GUIDE.md` - How to port .NET/WinForms apps to Linux/PyQt6
 - `doc/TECHNICAL_REFERENCE.md` - Protocol details, FBL codes
 - `doc/UI_RESOURCE_MAPPING.md` - Windows resource → Linux asset mapping
 - `doc/WINDOWS_UI_HIERARCHY.md` - Windows control hierarchy analysis
