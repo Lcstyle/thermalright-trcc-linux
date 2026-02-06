@@ -759,15 +759,17 @@ class FormCZTVController:
         self._load_static_image(path)
 
     def save_theme(self, name: str, data_dir: Path) -> Tuple[bool, str]:
-        """Save current config as a local theme.
+        """Save current config as a custom theme, preserving the original.
 
-        Windows pattern (buttonBCZT_Click): CopyDireToDire(working_dir → storage).
-        Reference: form_cztv.py:1596-1677
+        Reads the original theme's DC, merges current overlay changes,
+        and saves to Custom_{name} so default themes stay untouched.
         """
         if not self.current_image:
             return False, "No image to save"
 
-        theme_path = data_dir / f'Theme{self.lcd_width}{self.lcd_height}' / name
+        # Always save to Custom_ prefixed folder to protect defaults
+        safe_name = f'Custom_{name}' if not name.startswith('Custom_') else name
+        theme_path = data_dir / f'Theme{self.lcd_width}{self.lcd_height}' / safe_name
         try:
             # Ensure current background is in working dir
             bg_path = self.working_dir / '00.png'
@@ -781,14 +783,17 @@ class FormCZTVController:
                 thumb.thumbnail((120, 120))
                 thumb.save(str(thumb_path))
 
-            # Write config1.dc to working dir if dc_writer available
+            # Get current overlay config from renderer and write merged DC
             try:
                 from ..dc_writer import save_theme as dc_save_theme
+                renderer = self.overlay._ensure_renderer()
+                overlay_config = renderer.config if renderer else None
                 mask_img, mask_pos = self.overlay.get_theme_mask()
                 dc_save_theme(
                     str(self.working_dir),
                     background_image=self.current_image,
                     mask_image=mask_img,
+                    overlay_config=overlay_config,
                     mask_position=mask_pos,
                     display_width=self.lcd_width,
                     display_height=self.lcd_height,
@@ -803,7 +808,7 @@ class FormCZTVController:
                     shutil.copy2(str(f), str(theme_path / f.name))
 
             self.current_theme_path = theme_path
-            return True, f"Saved: {name}"
+            return True, f"Saved: {safe_name}"
         except Exception as e:
             return False, f"Save failed: {e}"
 

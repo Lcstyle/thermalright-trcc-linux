@@ -94,12 +94,14 @@ def parse_dc_file(filepath: str) -> dict:
     with open(filepath, 'rb') as f:
         data = f.read()
 
-    if len(data) < 100:
-        raise ValueError(f"File too small to be valid .dc: {len(data)} bytes")
-
-    # Check magic byte (0xdc = 320x320 standard, 0xdd = cloud/alternate format)
-    if data[0] not in (0xdc, 0xdd):
+    # Check magic byte first
+    if not data or data[0] not in (0xdc, 0xdd):
         raise ValueError(f"Invalid magic byte: 0x{data[0]:02x}, expected 0xdc or 0xdd")
+
+    # Format-aware minimum size: 0xDD can be 46 bytes (0 elements), 0xDC needs ~100+
+    min_size = 46 if data[0] == 0xdd else 100
+    if len(data) < min_size:
+        raise ValueError(f"File too small to be valid .dc: {len(data)} bytes")
 
     result = {
         'version': struct.unpack_from('<I', data, 0)[0],

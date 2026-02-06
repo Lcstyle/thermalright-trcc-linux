@@ -770,7 +770,6 @@ class TRCCMainWindowMVC(QMainWindow):
         self.uc_about.temp_unit_changed.connect(self._on_temp_unit_changed)
         self.uc_about.hdd_toggle_changed.connect(self._on_hdd_toggle_changed)
         self.uc_about.refresh_changed.connect(self._on_refresh_changed)
-        self.uc_about.resolution_changed.connect(self._on_resolution_changed)
 
     def _on_device_widget_clicked(self, device_info: dict):
         """Forward device selection to controller."""
