@@ -69,9 +69,12 @@ src/trcc/
 ├── dc_writer.py            # Write config1.dc files
 ├── overlay_renderer.py     # PIL-based overlay text/sensor rendering
 ├── gif_animator.py         # GIF/video frame extraction (FFmpeg)
+├── sensor_enumerator.py    # Hardware sensor discovery (hwmon, pynvml, psutil, RAPL)
+├── sysinfo_config.py       # Dashboard panel config persistence
 ├── system_info.py          # CPU/GPU/RAM/disk sensor collection
 ├── cloud_downloader.py     # Cloud theme HTTP fetch
 ├── theme_downloader.py     # Theme pack download manager
+├── theme_io.py             # Theme export/import (.tr format)
 ├── paths.py                # XDG data/config, per-device config, .7z extraction
 ├── core/
 │   ├── models.py           # ThemeInfo, DeviceInfo, VideoState, OverlayElement
@@ -92,7 +95,11 @@ src/trcc/
     ├── uc_about.py         # Settings / about panel (auto-start, language, etc.)
     ├── uc_activity_sidebar.py  # Sensor element picker
     ├── uc_info_module.py   # Live system info display
-    └── uc_system_info.py   # System info widget
+    ├── uc_system_info.py   # System info dashboard
+    ├── uc_sensor_picker.py # Sensor selection dialog
+    ├── eyedropper.py       # Fullscreen color picker
+    ├── screen_capture.py   # X11/Wayland screen grab
+    └── pipewire_capture.py # PipeWire/Portal Wayland capture
 ```
 
 ### External References
@@ -205,6 +212,8 @@ Ordinal assigned by sorting detected devices by `/dev/sgX` path.
 - `theme_path` — last selected theme directory or video path
 - `brightness_level` — 1/2/3 (maps to 25%/50%/100%)
 - `rotation` — 0/90/180/270
+- `carousel` — `{enabled, interval, themes}` slideshow config
+- `overlay` — `{enabled, config}` overlay element config dict
 
 **Global settings** (top-level keys): `temp_unit`, `resolution`
 
@@ -217,7 +226,16 @@ Config structure:
     "0:87cd_70db": {
       "theme_path": "/path/to/Theme320320/003a",
       "brightness_level": 2,
-      "rotation": 0
+      "rotation": 0,
+      "carousel": {
+        "enabled": true,
+        "interval": 5,
+        "themes": ["Theme1", "Theme3"]
+      },
+      "overlay": {
+        "enabled": true,
+        "config": {"time_0": {"x": 10, "y": 10, "metric": "time", "....": "..."}}
+      }
     }
   }
 }
@@ -243,5 +261,7 @@ Categories by filename prefix: a=Gallery, b=Tech, c=HUD, d=Light, e=Nature, y=Ae
 ## See Also
 
 - `doc/INSTALL_GUIDE.md` - Detailed installation instructions for all distros
+- `doc/ARCHITECTURE.md` - Project layout, MVC design, per-device config
+- `doc/CHANGELOG.md` - Version history and release notes
+- `doc/TECHNICAL_REFERENCE.md` - Protocol details, FBL codes, DC file formats
 - `doc/PORTING_GUIDE.md` - How to port .NET/WinForms apps to Linux/PyQt6
-- `doc/TECHNICAL_REFERENCE.md` - Protocol details, FBL codes
