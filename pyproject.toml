@@ -38,6 +38,9 @@ dependencies = [
 systray = [
     "pystray>=0.19.0",
 ]
+archive = [
+    "py7zr>=0.20.0",
+]
 # NOTE: For video playback, ffmpeg system package is RECOMMENDED (matches Windows TRCC)
 # This opencv extra is an alternative if ffmpeg is not available on your system
 video = [
@@ -48,7 +51,7 @@ dev = [
     "pytest-cov>=4.0.0",
 ]
 all = [
-    "trcc-linux[systray,video,dev]",
+    "trcc-linux[systray,archive,video,dev]",
 ]
 
 [project.urls]

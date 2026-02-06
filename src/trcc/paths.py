@@ -4,7 +4,11 @@ Central path constants and utilities for TRCC.
 All path calculations happen once here. Components import what they need.
 """
 import json
+import logging
 import os
+import subprocess
+
+log = logging.getLogger(__name__)
 
 # PIL import (done once, shared by all components)
 try:
@@ -96,6 +100,80 @@ def get_web_masks_dir(width: int, height: int) -> str:
     Matches Windows layout: Data/USBLCD/Web/zt{W}{H}/
     """
     return os.path.join(DATA_DIR, 'Web', f'zt{width}{height}')
+
+
+def _extract_7z(archive: str, target_dir: str) -> bool:
+    """Extract a .7z archive into target_dir. Returns True on success.
+
+    Tries py7zr first, falls back to system 7z command.
+    """
+    os.makedirs(target_dir, exist_ok=True)
+
+    try:
+        import py7zr
+        with py7zr.SevenZipFile(archive, 'r') as z:
+            z.extractall(target_dir)
+        log.info("Extracted %s (py7zr)", os.path.basename(archive))
+        return True
+    except ImportError:
+        pass
+    except Exception as e:
+        log.warning("py7zr extraction failed: %s", e)
+
+    try:
+        result = subprocess.run(
+            ['7z', 'x', archive, f'-o{target_dir}', '-y'],
+            capture_output=True, timeout=120,
+        )
+        if result.returncode == 0:
+            log.info("Extracted %s (7z CLI)", os.path.basename(archive))
+            return True
+        log.warning("7z CLI failed (rc=%d): %s", result.returncode, result.stderr.decode())
+    except FileNotFoundError:
+        log.warning("Neither py7zr nor 7z CLI available — cannot extract %s", archive)
+    except Exception as e:
+        log.warning("7z CLI extraction failed: %s", e)
+
+    return False
+
+
+def ensure_themes_extracted(width: int, height: int) -> bool:
+    """Extract default themes from .7z archive if not already present.
+
+    Looks for src/data/Theme{W}{H}.7z beside the theme directory and extracts
+    it in-place when the directory is missing or empty. Uses py7zr if available,
+    falling back to the system 7z command.
+
+    Returns True if themes are available (already existed or freshly extracted).
+    """
+    theme_dir = get_theme_dir(width, height)
+    archive = theme_dir + '.7z'
+
+    if _has_actual_themes(theme_dir):
+        return True
+    if not os.path.isfile(archive):
+        return False
+
+    return _extract_7z(archive, theme_dir)
+
+
+def ensure_web_masks_extracted(width: int, height: int) -> bool:
+    """Extract cloud mask themes from .7z archive if not already present.
+
+    Looks for src/data/Web/zt{W}{H}.7z beside the masks directory and extracts
+    it in-place when the directory is missing or empty.
+
+    Returns True if masks are available (already existed or freshly extracted).
+    """
+    masks_dir = get_web_masks_dir(width, height)
+    archive = masks_dir + '.7z'
+
+    if _has_actual_themes(masks_dir):
+        return True
+    if not os.path.isfile(archive):
+        return False
+
+    return _extract_7z(archive, masks_dir)
 
 
 def find_resource(filename: str, search_paths: list = None) -> str | None:

@@ -50,6 +50,11 @@ trcc_setup.h
 src/data/Theme*/[0-9]*/
 src/data/Theme*/Theme.zt
 
+# Extracted default themes (regenerated from .7z archives at runtime)
+# The .7z archives ARE tracked in git
+src/data/Theme*/Theme[1-5]/
+!src/data/Theme*.7z
+
 # Non-SCSI resolution theme dirs (USBLCDNEW/HID only — not supported yet)
 src/data/Theme240320/
 src/data/Theme320240/
@@ -69,9 +74,14 @@ src/data/Theme4621920/
 src/data/Theme4801280/
 src/data/Theme/
 
-# Cloud theme MP4s (downloaded on-demand, too large for git)
-# PNGs in Web/ are bundled previews and SHOULD be tracked
+# Cloud theme cache (PNGs extracted from .7z at runtime, MP4s downloaded on-demand)
+# .7z archives ARE tracked in git
 src/data/Web/**/*.mp4
+src/data/Web/**/*.png
+
+# Cloud mask themes (extracted from zt*.7z archives at runtime)
+src/data/Web/zt*/[0-9]*/
+!src/data/Web/zt*.7z
 
 # Dev tooling artifacts
 src/data/settings.json
