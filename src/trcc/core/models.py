@@ -218,9 +218,13 @@ class DeviceInfo:
     path: str  # /dev/sgX
     resolution: Tuple[int, int] = (320, 320)
 
-    # Device properties (from SCSI inquiry)
+    # Device properties (from SCSI inquiry / detection)
     vendor: Optional[str] = None
     product: Optional[str] = None
+    model: Optional[str] = None
+    vid: int = 0
+    pid: int = 0
+    device_index: int = 0  # 0-based ordinal among detected devices
     fbl_code: Optional[int] = None  # Resolution identifier
 
     # State
@@ -266,6 +270,10 @@ class DeviceModel:
                               else (320, 320),
                     vendor=d.get('vendor'),
                     product=d.get('product'),
+                    model=d.get('model'),
+                    vid=d.get('vid', 0),
+                    pid=d.get('pid', 0),
+                    device_index=d.get('device_index', 0),
                 )
                 for d in raw_devices
             ]

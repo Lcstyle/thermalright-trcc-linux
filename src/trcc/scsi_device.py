@@ -151,7 +151,14 @@ def find_lcd_devices() -> List[Dict]:
             'product': dev.product_name,
             'model': dev.model,
             'button_image': dev.button_image,
+            'vid': dev.vid,
+            'pid': dev.pid,
         })
+
+    # Sort by SCSI device path for stable ordinal assignment
+    devices.sort(key=lambda d: d['path'])
+    for i, d in enumerate(devices):
+        d['device_index'] = i
 
     return devices
 

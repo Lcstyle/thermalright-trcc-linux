@@ -49,6 +49,7 @@ from .uc_info_module import UCInfoModule
 from .uc_activity_sidebar import UCActivitySidebar
 from ..dc_writer import CarouselConfig, write_carousel_config, read_carousel_config
 from ..paths import get_web_dir, get_web_masks_dir, get_saved_temp_unit, save_temp_unit
+from ..paths import device_config_key, get_device_config, save_device_setting
 
 # Language code mapping: system locale -> Windows asset suffix
 LOCALE_TO_LANG = {
@@ -150,6 +151,9 @@ class TRCCMainWindowMVC(QMainWindow):
 
         # Language for localized backgrounds
         self._lang = detect_language()
+
+        # Per-device config tracking
+        self._active_device_key = ''
 
         # Pixmap references to prevent GC
         self._pixmap_refs = []
@@ -698,11 +702,29 @@ class TRCCMainWindowMVC(QMainWindow):
         self.uc_preview.set_progress(percent, current_time, total_time)
 
     def _on_device_selected(self, device: DeviceInfo):
-        """Handle device selection."""
+        """Handle device selection — restore per-device config."""
+        self._active_device_key = device_config_key(
+            device.device_index, device.vid, device.pid)
         self.uc_preview.set_status(f"Device: {device.path}")
+
         # Update resolution if changed
         if device.resolution != (self.controller.lcd_width, self.controller.lcd_height):
-            self.uc_preview.set_resolution(*device.resolution)
+            self._on_resolution_changed(*device.resolution)
+
+        # Restore per-device brightness and rotation
+        cfg = get_device_config(self._active_device_key)
+        brightness_level = cfg.get('brightness_level', 2)
+        rotation_index = cfg.get('rotation', 0) // 90
+
+        self._brightness_level = brightness_level
+        self._update_brightness_icon()
+        brightness_values = {1: 25, 2: 50, 3: 100}
+        self.controller.set_brightness(brightness_values.get(brightness_level, 50))
+
+        self.rotation_combo.blockSignals(True)
+        self.rotation_combo.setCurrentIndex(rotation_index)
+        self.rotation_combo.blockSignals(False)
+        self.controller.set_rotation(rotation_index * 90)
 
     def _on_send_complete(self, success: bool):
         """Handle LCD send completion."""
@@ -786,6 +808,10 @@ class TRCCMainWindowMVC(QMainWindow):
             name=device_info.get('name', 'LCD'),
             path=device_info.get('path', ''),
             resolution=device_info.get('resolution', (320, 320)),
+            model=device_info.get('model'),
+            vid=device_info.get('vid', 0),
+            pid=device_info.get('pid', 0),
+            device_index=device_info.get('device_index', 0),
         )
         self.controller.devices.select_device(device)
 
@@ -1438,6 +1464,10 @@ class TRCCMainWindowMVC(QMainWindow):
                     resolution=d.get('resolution', (320, 320)),
                     vendor=d.get('vendor'),
                     product=d.get('product'),
+                    model=d.get('model'),
+                    vid=d.get('vid', 0),
+                    pid=d.get('pid', 0),
+                    device_index=d.get('device_index', 0),
                 )
                 self.controller.devices.select_device(device)
                 self.uc_preview.set_status(f"Device: {device.path}")
@@ -1452,6 +1482,8 @@ class TRCCMainWindowMVC(QMainWindow):
         """
         rotation = index * 90
         self.controller.set_rotation(rotation)
+        if self._active_device_key:
+            save_device_setting(self._active_device_key, 'rotation', rotation)
         self.uc_preview.set_status(f"Rotation: {rotation}°")
 
     def _on_brightness_cycle(self):
@@ -1464,6 +1496,9 @@ class TRCCMainWindowMVC(QMainWindow):
         brightness_values = {1: 25, 2: 50, 3: 100}
         brightness = brightness_values[self._brightness_level]
         self.controller.set_brightness(brightness)
+        if self._active_device_key:
+            save_device_setting(self._active_device_key, 'brightness_level',
+                                self._brightness_level)
         self.uc_preview.set_status(f"Brightness: L{self._brightness_level} ({brightness}%)")
 
     def _update_brightness_icon(self):

@@ -317,3 +317,26 @@ def save_temp_unit(unit: int):
     config = load_config()
     config['temp_unit'] = unit
     save_config(config)
+
+
+# =========================================================================
+# Per-device configuration
+# =========================================================================
+
+def device_config_key(index: int, vid: int, pid: int) -> str:
+    """Build per-device config key, e.g. '0:87cd_70db'."""
+    return f"{index}:{vid:04x}_{pid:04x}"
+
+
+def get_device_config(key: str) -> dict:
+    """Get per-device config dict. Returns empty dict if not found."""
+    return load_config().get('devices', {}).get(key, {})
+
+
+def save_device_setting(key: str, setting: str, value):
+    """Save a single setting for a device."""
+    config = load_config()
+    devices = config.setdefault('devices', {})
+    dev_cfg = devices.setdefault(key, {})
+    dev_cfg[setting] = value
+    save_config(config)
