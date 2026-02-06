@@ -37,7 +37,7 @@ dependencies = [
 
 [project.optional-dependencies]
 nvidia = [
-    "pynvml>=11.0.0",
+    "nvidia-ml-py>=11.0.0",
 ]
 wayland = [
     "dbus-python>=1.3.0",

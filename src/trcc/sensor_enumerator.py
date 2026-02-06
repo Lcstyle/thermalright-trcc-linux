@@ -3,7 +3,7 @@ Linux hardware sensor discovery and reading.
 
 Replaces Windows HWiNFO64 shared memory with native Linux sensor sources:
 - hwmon: /sys/class/hwmon/* (temperatures, fans, voltages, power, frequency)
-- NVIDIA GPU: pynvml (temperature, utilization, clock, power, VRAM, fan)
+- NVIDIA GPU: nvidia-ml-py / pynvml (temperature, utilization, clock, power, VRAM, fan)
 - psutil: CPU usage/frequency, memory, disk I/O, network I/O
 - Intel RAPL: CPU package power via /sys/class/powercap/
 

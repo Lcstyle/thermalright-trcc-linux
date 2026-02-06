@@ -161,7 +161,7 @@ src/trcc/
 ├── dc_writer.py                 # Write config1.dc files
 ├── overlay_renderer.py          # PIL-based text/sensor overlay rendering
 ├── gif_animator.py              # FFmpeg video frame extraction
-├── sensor_enumerator.py         # Hardware sensor discovery (hwmon, pynvml, psutil, RAPL)
+├── sensor_enumerator.py         # Hardware sensor discovery (hwmon, nvidia-ml-py, psutil, RAPL)
 ├── sysinfo_config.py            # Dashboard panel config persistence
 ├── system_info.py               # CPU/GPU/RAM/disk sensor collection
 ├── cloud_downloader.py          # Cloud theme HTTP fetch

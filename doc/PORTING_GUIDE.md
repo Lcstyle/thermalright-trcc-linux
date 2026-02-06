@@ -81,7 +81,7 @@ This lets you swap GUI frameworks (PyQt6, Tkinter, GTK) without rewriting logic.
 | Windows | Linux |
 |---------|-------|
 | HWiNFO64 shared memory | `/sys/class/hwmon/*/` (temps, fans, voltages) |
-| NVIDIA System Management (WMI) | `pynvml` (direct NVML bindings) |
+| NVIDIA System Management (WMI) | `nvidia-ml-py` (direct NVML bindings) |
 | WMI `Win32_Processor` | `psutil` (CPU, memory, disk, network) |
 | Intel Power Gadget | `/sys/class/powercap/intel-rapl:*/energy_uj` |
 | Performance Counters | `psutil.disk_io_counters()`, `psutil.net_io_counters()` |
