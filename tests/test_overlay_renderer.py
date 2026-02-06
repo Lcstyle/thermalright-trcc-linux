@@ -259,7 +259,7 @@ class TestRender(unittest.TestCase):
         renderer = OverlayRenderer()
         img = renderer.render()
         self.assertEqual(img.size, (320, 320))
-        self.assertEqual(img.mode, 'RGBA')
+        self.assertEqual(img.mode, 'RGB')
 
     def test_render_with_background(self):
         """Test rendering with background."""
@@ -475,7 +475,7 @@ class TestRenderIntegration(unittest.TestCase):
 
         # Verify output
         self.assertEqual(img.size, (320, 320))
-        self.assertEqual(img.mode, 'RGBA')
+        self.assertEqual(img.mode, 'RGB')
 
     def test_render_without_metrics(self):
         """Test rendering when no metrics provided."""
@@ -492,9 +492,9 @@ class TestRenderIntegration(unittest.TestCase):
         self.assertEqual(img.size, (320, 320))
 
     def test_render_transparent_background(self):
-        """Test rendering with transparent background (no 00.png)."""
+        """Test rendering with no background starts from black (RGBA→RGB conversion)."""
         renderer = OverlayRenderer()
-        # Don't set background - should create transparent
+        # Don't set background - creates transparent RGBA then converts to RGB
         renderer.set_config({
             'label': {
                 'x': 160, 'y': 160,
@@ -504,10 +504,10 @@ class TestRenderIntegration(unittest.TestCase):
             }
         })
         img = renderer.render()
-        self.assertEqual(img.mode, 'RGBA')
-        # Check that background is transparent
+        self.assertEqual(img.mode, 'RGB')
+        # Transparent RGBA becomes black when converted to RGB
         pixel = img.getpixel((0, 0))
-        self.assertEqual(pixel[3], 0)  # Alpha should be 0
+        self.assertEqual(pixel, (0, 0, 0))
 
 
 class TestConfigElements(unittest.TestCase):
