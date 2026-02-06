@@ -407,6 +407,13 @@ class OverlayGridPanel(QFrame):
     def overlay_enabled(self):
         return self._overlay_enabled
 
+    def set_overlay_enabled(self, enabled: bool):
+        """Programmatically set overlay enabled state (no signal emitted)."""
+        self._overlay_enabled = enabled
+        self._toggle_btn.blockSignals(True)
+        self._toggle_btn.setChecked(enabled)
+        self._toggle_btn.blockSignals(False)
+
     def add_element(self, config):
         """Add an element to the grid."""
         if len(self._configs) >= self.MAX_ELEMENTS:
@@ -1522,3 +1529,6 @@ class UCThemeSetting(BasePanel):
 
     def load_from_overlay_config(self, overlay_config):
         self.overlay_grid.load_from_overlay_config(overlay_config)
+
+    def set_overlay_enabled(self, enabled: bool):
+        self.overlay_grid.set_overlay_enabled(enabled)

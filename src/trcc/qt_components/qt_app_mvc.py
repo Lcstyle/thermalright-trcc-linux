@@ -762,6 +762,33 @@ class TRCCMainWindowMVC(QMainWindow):
             self.uc_theme_local._slideshow = False
             self.uc_theme_local._apply_decorations()
 
+        # Restore per-device overlay config
+        overlay = cfg.get('overlay')
+        if overlay and isinstance(overlay, dict):
+            enabled = overlay.get('enabled', False)
+            config = overlay.get('config', {})
+            if config:
+                self.uc_theme_setting.load_from_overlay_config(config)
+                self.controller.overlay.set_config(config)
+            self.uc_theme_setting.set_overlay_enabled(enabled)
+            self.controller.overlay.enable(enabled)
+            if enabled:
+                self.uc_info_module.setVisible(True)
+                self.uc_info_module.start_updates()
+                self.start_metrics()
+            else:
+                self.uc_info_module.setVisible(False)
+                self.uc_info_module.stop_updates()
+                self.stop_metrics()
+        else:
+            # No overlay config — disable overlay
+            self.uc_theme_setting.set_overlay_enabled(False)
+            self.controller.overlay.enable(False)
+            self.uc_info_module.setVisible(False)
+            self.uc_info_module.stop_updates()
+            self.stop_metrics()
+            self.uc_theme_setting.overlay_grid.clear_all()
+
     def _on_send_complete(self, success: bool):
         """Handle LCD send completion."""
         self.uc_preview.set_status("Sent to LCD" if success else "Send failed")
@@ -904,6 +931,13 @@ class TRCCMainWindowMVC(QMainWindow):
             return
         self.controller.overlay.set_config(element_data)
         self.controller.render_overlay_and_preview()
+
+        # Save overlay config per-device
+        if self._active_device_key:
+            save_device_setting(self._active_device_key, 'overlay', {
+                'enabled': self.uc_theme_setting.overlay_grid.overlay_enabled,
+                'config': element_data,
+            })
 
     def _on_background_toggle(self, enabled: bool):
         """Handle background display toggle from settings (Windows cmd 1 / myMode=0)."""
@@ -1188,6 +1222,13 @@ class TRCCMainWindowMVC(QMainWindow):
         else:
             self.uc_info_module.stop_updates()
             self.stop_metrics()
+
+        # Save overlay enabled state per-device
+        if self._active_device_key:
+            cfg = get_device_config(self._active_device_key)
+            overlay = cfg.get('overlay', {})
+            overlay['enabled'] = enabled
+            save_device_setting(self._active_device_key, 'overlay', overlay)
 
     def _on_screencast_params_changed(self, x, y, w, h):
         """Store screencast region coordinates for the capture loop."""
