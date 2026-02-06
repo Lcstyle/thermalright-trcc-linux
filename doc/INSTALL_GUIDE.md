@@ -98,60 +98,60 @@ Plug in your cooler and run `lsusb`. Find the VID:PID for your device and check 
 
 ### Installing for HID devices
 
-#### 1. Clone the testing branch
+Find your distro, copy the one-liner, paste in terminal. After it finishes: **unplug and replug the USB cable** (or reboot), then run `trcc gui`.
+
+#### Fedora / Nobara
 
 ```bash
-git clone -b hid-protocol-testing https://github.com/Lexonight1/thermalright-trcc-linux.git
-cd thermalright-trcc-linux
+sudo dnf install libusb1-devel python3-pyqt6 ffmpeg && git clone -b hid-protocol-testing https://github.com/Lexonight1/thermalright-trcc-linux.git && cd thermalright-trcc-linux && pip install --break-system-packages -e ".[hid]" && sudo trcc setup-udev
 ```
 
-#### 2. Install HID USB libraries
-
-HID devices need `pyusb` (preferred) or `hidapi` (fallback) instead of `sg3_utils`:
+#### Ubuntu / Debian / Mint / Pop!_OS
 
 ```bash
-# Fedora / RHEL / Nobara
-sudo dnf install libusb1-devel python3-pyusb
-# or: sudo dnf install hidapi-devel python3-hidapi
-
-# Ubuntu / Debian / Linux Mint / Pop!_OS
-sudo apt install libusb-1.0-0-dev python3-usb
-# or: sudo apt install libhidapi-dev python3-hidapi
-
-# Arch / Manjaro / EndeavourOS / CachyOS
-sudo pacman -S libusb python-pyusb
-# or: sudo pacman -S hidapi python-hidapi
-
-# openSUSE
-sudo zypper install libusb-1_0-devel python3-pyusb
-# or: sudo zypper install libhidapi-devel python3-hidapi
-
-# Or install via pip (any distro)
-pip install pyusb    # needs libusb-1.0 system lib
-pip install hidapi   # needs libhidapi system lib
+sudo apt install libusb-1.0-0-dev python3-pyqt6 ffmpeg python3-pip && git clone -b hid-protocol-testing https://github.com/Lexonight1/thermalright-trcc-linux.git && cd thermalright-trcc-linux && pip install --break-system-packages -e ".[hid]" && sudo trcc setup-udev
 ```
 
-> **You only need one backend** — `pyusb` is preferred, `hidapi` is the fallback. TRCC auto-detects which is available.
-
-#### 3. Install remaining dependencies
-
-Follow the normal [Step 1](#step-1---install-system-dependencies) for your distro, but **`sg3_utils` is optional for HID-only users** (it's only needed for SCSI devices). Everything else (PyQt6, FFmpeg, Pillow, etc.) is the same.
-
-#### 4. Install and run
+#### Arch / Manjaro / EndeavourOS / CachyOS / Garuda
 
 ```bash
-pip install -e ".[hid]"     # installs TRCC + HID deps
-trcc gui                     # launch the GUI
+sudo pacman -S libusb python-pyqt6 ffmpeg python-pip && git clone -b hid-protocol-testing https://github.com/Lexonight1/thermalright-trcc-linux.git && cd thermalright-trcc-linux && pip install --break-system-packages -e ".[hid]" && sudo trcc setup-udev
 ```
 
-Or without pip install:
+#### openSUSE
 
 ```bash
-pip install pyusb            # or hidapi
-PYTHONPATH=src python3 -m trcc.cli gui
+sudo zypper install libusb-1_0-devel python3-qt6 ffmpeg python3-pip && git clone -b hid-protocol-testing https://github.com/Lexonight1/thermalright-trcc-linux.git && cd thermalright-trcc-linux && pip install --break-system-packages -e ".[hid]" && sudo trcc setup-udev
 ```
 
-#### 5. Verify detection
+#### Void Linux
+
+```bash
+sudo xbps-install libusb-devel python3-PyQt6 ffmpeg python3-pip && git clone -b hid-protocol-testing https://github.com/Lexonight1/thermalright-trcc-linux.git && cd thermalright-trcc-linux && pip install --break-system-packages -e ".[hid]" && sudo trcc setup-udev
+```
+
+#### Gentoo
+
+```bash
+sudo emerge --ask dev-libs/libusb dev-python/PyQt6 media-video/ffmpeg dev-python/pip && git clone -b hid-protocol-testing https://github.com/Lexonight1/thermalright-trcc-linux.git && cd thermalright-trcc-linux && pip install --break-system-packages -e ".[hid]" && sudo trcc setup-udev
+```
+
+#### Alpine
+
+```bash
+sudo apk add libusb-dev py3-pyqt6 ffmpeg py3-pip python3 && git clone -b hid-protocol-testing https://github.com/Lexonight1/thermalright-trcc-linux.git && cd thermalright-trcc-linux && pip install --break-system-packages -e ".[hid]" && sudo trcc setup-udev
+```
+
+#### Bazzite / Fedora Atomic
+
+```bash
+git clone -b hid-protocol-testing https://github.com/Lexonight1/thermalright-trcc-linux.git && cd thermalright-trcc-linux && python3 -m venv ~/trcc-env && source ~/trcc-env/bin/activate && pip install -e ".[hid]" && sudo ~/trcc-env/bin/trcc setup-udev
+```
+Launch: `source ~/trcc-env/bin/activate && trcc gui`
+
+> **Note:** `sg3_utils` is **not needed** for HID devices. The one-liners above install `libusb` instead, which is what HID uses. Everything else (PyQt6, FFmpeg, etc.) is the same as the SCSI install.
+
+#### Verify detection
 
 ```bash
 trcc detect --all
