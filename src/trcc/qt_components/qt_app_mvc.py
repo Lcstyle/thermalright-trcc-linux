@@ -739,6 +739,29 @@ class TRCCMainWindowMVC(QMainWindow):
                 else:
                     self._select_theme_from_path(theme_path)
 
+        # Restore per-device carousel
+        carousel = cfg.get('carousel')
+        if carousel and isinstance(carousel, dict):
+            self.uc_theme_local._lunbo_array = carousel.get('themes', [])
+            self.uc_theme_local._slideshow = carousel.get('enabled', False)
+            self.uc_theme_local._slideshow_interval = carousel.get('interval', 3)
+            self.uc_theme_local.timer_input.setText(
+                str(carousel.get('interval', 3)))
+            px = (self.uc_theme_local._lunbo_on if carousel.get('enabled')
+                  else self.uc_theme_local._lunbo_off)
+            if not px.isNull():
+                self.uc_theme_local.slideshow_btn.setIcon(QIcon(px))
+                self.uc_theme_local.slideshow_btn.setIconSize(
+                    self.uc_theme_local.slideshow_btn.size())
+            self.uc_theme_local._apply_decorations()
+            self._update_slideshow_state()
+        else:
+            # No carousel config — stop slideshow, clear badges
+            self._slideshow_timer.stop()
+            self.uc_theme_local._lunbo_array = []
+            self.uc_theme_local._slideshow = False
+            self.uc_theme_local._apply_decorations()
+
     def _on_send_complete(self, success: bool):
         """Handle LCD send completion."""
         self.uc_preview.set_status("Sent to LCD" if success else "Send failed")
@@ -1236,6 +1259,15 @@ class TRCCMainWindowMVC(QMainWindow):
 
         # Save carousel config (Theme.dc) - Windows cmd=48
         self._save_carousel_config()
+
+        # Persist carousel state per-device
+        if self._active_device_key:
+            themes = self.uc_theme_local.get_slideshow_themes()
+            save_device_setting(self._active_device_key, 'carousel', {
+                'enabled': self.uc_theme_local.is_slideshow(),
+                'interval': self.uc_theme_local.get_slideshow_interval(),
+                'themes': [t.get('name', '') for t in themes],
+            })
 
     def _get_theme_dir(self) -> Path:
         """Get current theme directory for this resolution."""
