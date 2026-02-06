@@ -633,8 +633,8 @@ class TRCCMainWindowMVC(QMainWindow):
         w, h = self.controller.lcd_width, self.controller.lcd_height
 
         theme_dir = self._data_dir / f'Theme{w}{h}'
+        self.uc_theme_local.set_theme_directory(theme_dir)
         if theme_dir.exists():
-            self.uc_theme_local.set_theme_directory(theme_dir)
             # Load carousel config (Theme.dc) after themes are loaded
             self._load_carousel_config(theme_dir)
 
@@ -1040,6 +1040,9 @@ class TRCCMainWindowMVC(QMainWindow):
         success, msg = self.controller.save_theme(name, self._data_dir)
         self.uc_preview.set_status(msg)
         if success:
+            w, h = self.controller.lcd_width, self.controller.lcd_height
+            theme_dir = self._data_dir / f'Theme{w}{h}'
+            self.uc_theme_local.set_theme_directory(theme_dir)
             self.uc_theme_local.load_themes()
 
     def _on_export_clicked(self):
@@ -1062,6 +1065,9 @@ class TRCCMainWindowMVC(QMainWindow):
             success, msg = self.controller.import_config(Path(path), self._data_dir)
             self.uc_preview.set_status(msg)
             if success:
+                w, h = self.controller.lcd_width, self.controller.lcd_height
+                theme_dir = self._data_dir / f'Theme{w}{h}'
+                self.uc_theme_local.set_theme_directory(theme_dir)
                 self.uc_theme_local.load_themes()
 
     def _on_send_clicked(self):
