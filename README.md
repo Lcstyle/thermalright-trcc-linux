@@ -1,6 +1,6 @@
 # TRCC Linux
 
-[![Version](https://img.shields.io/badge/version-1.1.0-blue.svg)](https://github.com/Lexonight1/thermalright-trcc-linux/releases)
+[![Version](https://img.shields.io/badge/version-1.1.2-blue.svg)](https://github.com/Lexonight1/thermalright-trcc-linux/releases)
 [![License](https://img.shields.io/badge/license-GPL--3.0-green.svg)](LICENSE)
 [![Python](https://img.shields.io/badge/python-3.9%2B-blue.svg)](https://python.org)
 [![PyQt6](https://img.shields.io/badge/GUI-PyQt6-41cd52.svg)](https://www.riverbankcomputing.com/software/pyqt/)
@@ -29,20 +29,27 @@ Built with PyQt6, matching the original Windows UI pixel-for-pixel. **Feature-co
 | AK120 / AX120 / PA120 DIGITAL | `87CD:70DB` |
 | Wonder Vision (CZTV) | `87CD:70DB` |
 
-## Quick Install
+## Quick Start
 
 ```bash
-# System deps (Fedora example — see Install Guide for other distros)
-sudo dnf install sg3_utils usbutils python3-pip ffmpeg
+# 1. Clone the repo
+git clone -b stable https://github.com/Lexonight1/thermalright-trcc-linux.git
+cd thermalright-trcc-linux
 
-# Python deps
+# 2. Install system deps (Fedora example — see Install Guide for other distros)
+sudo dnf install sg3_utils python3-pyqt6 ffmpeg
+
+# 3. Install TRCC
 pip install -e .
 
-# Device permissions
+# 4. Set up device permissions (then unplug & replug USB cable)
 sudo trcc setup-udev
+
+# 5. Launch
+trcc gui
 ```
 
-See the **[Install Guide](doc/INSTALL_GUIDE.md)** for per-distro instructions (Fedora, Ubuntu, Arch, openSUSE), optional dependencies, and troubleshooting.
+See the **[Install Guide](doc/INSTALL_GUIDE.md)** for per-distro instructions (Fedora, Ubuntu, Debian, Arch, openSUSE, NixOS, Void, Gentoo, SteamOS, Bazzite, and more), optional dependencies, and troubleshooting.
 
 ## Usage
 

@@ -10,17 +10,36 @@ A beginner-friendly guide to getting Thermalright LCD Control Center running on 
 2. [Compatible Coolers](#compatible-coolers)
 3. [Prerequisites](#prerequisites)
 4. [Step 1 - Install System Dependencies](#step-1---install-system-dependencies)
+   - [Fedora / RHEL / CentOS Stream / Rocky / Alma](#fedora--rhel--centos-stream--rocky--alma)
+   - [Ubuntu / Debian / Linux Mint / Pop!_OS / Zorin / elementary](#ubuntu--debian--linux-mint--pop_os--zorin--elementary)
+   - [Arch Linux / Manjaro / EndeavourOS / CachyOS / Garuda](#arch-linux--manjaro--endeavouros--cachyos--garuda)
+   - [openSUSE Tumbleweed / Leap](#opensuse-tumbleweed--leap)
+   - [Nobara](#nobara)
+   - [NixOS](#nixos)
+   - [Void Linux](#void-linux)
+   - [Gentoo](#gentoo)
+   - [Alpine Linux](#alpine-linux)
+   - [Solus](#solus)
+   - [Clear Linux](#clear-linux)
 5. [Step 2 - Download TRCC](#step-2---download-trcc)
 6. [Step 3 - Install Python Dependencies](#step-3---install-python-dependencies)
 7. [Step 4 - Set Up Device Permissions](#step-4---set-up-device-permissions)
 8. [Step 5 - Connect Your Cooler](#step-5---connect-your-cooler)
 9. [Step 6 - Run TRCC](#step-6---run-trcc)
-10. [Bazzite / Fedora Atomic Install](#bazzite--fedora-atomic-install)
-11. [Using the GUI](#using-the-gui)
-12. [Command Line Usage](#command-line-usage)
-13. [Troubleshooting](#troubleshooting)
-14. [Wayland-Specific Notes](#wayland-specific-notes)
-15. [Uninstalling](#uninstalling)
+10. [Immutable / Atomic Distros](#immutable--atomic-distros)
+    - [Bazzite / Fedora Atomic / Aurora / Bluefin](#bazzite--fedora-atomic--aurora--bluefin)
+    - [SteamOS (Steam Deck)](#steamos-steam-deck)
+    - [Vanilla OS](#vanilla-os)
+    - [ChromeOS (Crostini)](#chromeos-crostini)
+11. [Special Hardware](#special-hardware)
+    - [Asahi Linux (Apple Silicon)](#asahi-linux-apple-silicon)
+    - [Raspberry Pi / ARM SBCs](#raspberry-pi--arm-sbcs)
+    - [WSL2 (Windows Subsystem for Linux)](#wsl2-windows-subsystem-for-linux)
+12. [Using the GUI](#using-the-gui)
+13. [Command Line Usage](#command-line-usage)
+14. [Troubleshooting](#troubleshooting)
+15. [Wayland-Specific Notes](#wayland-specific-notes)
+16. [Uninstalling](#uninstalling)
 
 ---
 
@@ -60,7 +79,7 @@ TRCC Linux works with these Thermalright products that have a built-in LCD displ
 
 Before starting, make sure you have:
 
-- A Linux distribution (Fedora, Ubuntu, Debian, Arch, openSUSE, etc.)
+- A Linux distribution (see supported list below)
 - Python 3.9 or newer (check with `python3 --version`)
 - A Thermalright cooler with LCD, connected via the included USB cable
 - Internet connection (for downloading dependencies)
@@ -76,86 +95,293 @@ python3 --version
 You should see something like `Python 3.11.6` or higher. If you get "command not found" or a version below 3.9, you'll need to install or update Python first:
 
 ```bash
-# Fedora
+# Fedora / RHEL
 sudo dnf install python3
 
-# Ubuntu/Debian
+# Ubuntu / Debian
 sudo apt install python3
 
 # Arch
 sudo pacman -S python
+
+# openSUSE
+sudo zypper install python3
+
+# Void
+sudo xbps-install python3
+
+# Alpine
+sudo apk add python3
 ```
 
 ---
 
 ## Step 1 - Install System Dependencies
 
-These are system-level packages that TRCC needs. Open a terminal and run the commands for your Linux distribution.
+These are system-level packages that TRCC needs. Find your distro below and run the commands.
 
-### Fedora / RHEL / CentOS Stream
+> **Important: Use system PyQt6 when possible.** Installing PyQt6 from your distro's package manager avoids Qt6 version mismatches that cause `Qt_6_PRIVATE_API` errors. Only fall back to `pip install PyQt6` if your distro doesn't package it.
+
+---
+
+### Fedora / RHEL / CentOS Stream / Rocky / Alma
+
+Covers: Fedora 39-43, RHEL 9+, CentOS Stream 9+, Rocky Linux 9+, AlmaLinux 9+
 
 ```bash
-# Required (GUI + device communication + video playback)
+# Required
 sudo dnf install python3-pip sg3_utils python3-pyqt6 ffmpeg
 
-# Optional (screen capture on Wayland, system tray)
+# Optional (screen capture on Wayland, NVIDIA GPU sensors)
 sudo dnf install grim python3-gobject python3-dbus pipewire-devel
 ```
 
-### Ubuntu / Debian / Linux Mint / Pop!_OS
+> **RHEL/Rocky/Alma note:** You may need to enable EPEL and CRB repositories for `ffmpeg` and `python3-pyqt6`:
+> ```bash
+> sudo dnf install epel-release
+> sudo dnf config-manager --set-enabled crb
+> ```
+> If `python3-pyqt6` isn't available, use `pip install PyQt6` instead.
+
+---
+
+### Ubuntu / Debian / Linux Mint / Pop!_OS / Zorin / elementary
+
+Covers: Ubuntu 22.04+, Debian 12+, Linux Mint 21+, Pop!_OS 22.04+, Zorin OS 17+, elementary OS 7+, KDE neon, Kubuntu, Xubuntu, Lubuntu
 
 ```bash
-# Required (GUI + device communication + video playback)
+# Required
 sudo apt install python3-pip python3-venv sg3-utils python3-pyqt6 ffmpeg
 
 # Optional (screen capture on Wayland, system tray)
 sudo apt install grim python3-gi python3-dbus python3-gst-1.0
 ```
 
-### Arch Linux / Manjaro / EndeavourOS
+> **Debian 12 (Bookworm) note:** `python3-pyqt6` is available in the repo. On older Debian/Ubuntu releases where it's missing, use `pip install PyQt6`.
+
+> **Ubuntu 23.04+ / Debian 12+ note:** pip may show "externally-managed-environment" errors. See [Step 3](#step-3---install-python-dependencies) for the fix.
+
+---
+
+### Arch Linux / Manjaro / EndeavourOS / CachyOS / Garuda
+
+Covers: Arch Linux, Manjaro, EndeavourOS, CachyOS, Garuda Linux, Artix Linux, ArcoLinux, BlackArch
 
 ```bash
-# Required (GUI + device communication + video playback)
+# Required
 sudo pacman -S python-pip sg3_utils python-pyqt6 ffmpeg
 
-# Optional (screen capture on Wayland, system tray)
+# Optional (screen capture on Wayland, NVIDIA GPU sensors)
 sudo pacman -S grim python-gobject python-dbus python-gst
 ```
 
-### openSUSE
+> **CachyOS note:** CachyOS ships its own optimized repos. The package names are the same as Arch. If you use the CachyOS kernel, `sg3_utils` works out of the box.
+
+> **Garuda note:** Garuda includes `chaotic-aur` by default, so most packages are available without building from source.
+
+---
+
+### openSUSE Tumbleweed / Leap
+
+Covers: openSUSE Tumbleweed, openSUSE Leap 15.5+, openSUSE MicroOS
 
 ```bash
-# Required (GUI + device communication + video playback)
+# Required
 sudo zypper install python3-pip sg3_utils python3-qt6 ffmpeg
 
-# Optional (screen capture on Wayland, system tray)
+# Optional (screen capture on Wayland)
 sudo zypper install grim python3-gobject python3-dbus-python python3-gstreamer
 ```
 
-### Bazzite / Fedora Atomic (Universal Blue)
+> **Leap note:** Leap's repos may have older PyQt6 versions. If you get import errors, use `pip install PyQt6` instead.
 
-Bazzite is an immutable Fedora-based distro. You can't use `dnf` directly — system packages are layered with `rpm-ostree` and require a reboot. See the [dedicated Bazzite section](#bazzite--fedora-atomic-install) below for the full walkthrough.
+> **MicroOS note:** openSUSE MicroOS is immutable. Use `transactional-update` instead of `zypper`:
+> ```bash
+> sudo transactional-update pkg install sg3_utils python3-pip python3-qt6 ffmpeg
+> sudo reboot
+> ```
 
-Quick version if you know what you're doing:
+---
+
+### Nobara
+
+Covers: Nobara 39-41 (Fedora-based gaming distro by GloriousEggroll)
+
+Nobara uses the same package manager as Fedora, with extra multimedia repos pre-configured:
 
 ```bash
-# Layer the one system package that MUST be on the host (SCSI device access)
-rpm-ostree install sg3_utils
-systemctl reboot
+# Required (ffmpeg is usually pre-installed on Nobara)
+sudo dnf install python3-pip sg3_utils python3-pyqt6 ffmpeg
 
-# Everything else runs in a Python venv
-python3 -m venv ~/trcc-env
-source ~/trcc-env/bin/activate
-pip install PyQt6 ffmpeg-python pillow psutil py7zr
-pip install -e .
+# Optional (screen capture on Wayland)
+sudo dnf install grim python3-gobject python3-dbus pipewire-devel
 ```
+
+---
+
+### NixOS
+
+Covers: NixOS 24.05+, NixOS unstable
+
+NixOS uses a declarative configuration model. You have two approaches:
+
+**Option A: Add to system configuration** (persistent, recommended)
+
+Edit `/etc/nixos/configuration.nix`:
+
+```nix
+{ pkgs, ... }:
+{
+  environment.systemPackages = with pkgs; [
+    python3
+    python3Packages.pip
+    python3Packages.pyqt6
+    python3Packages.pillow
+    python3Packages.psutil
+    sg3_utils
+    ffmpeg
+    p7zip
+  ];
+
+  # Allow your user to access SCSI generic devices
+  services.udev.extraRules = ''
+    # Thermalright LCD displays
+    SUBSYSTEM=="scsi_generic", ATTRS{idVendor}=="87cd", ATTRS{idProduct}=="70db", MODE="0666"
+    SUBSYSTEM=="scsi_generic", ATTRS{idVendor}=="0416", ATTRS{idProduct}=="5406", MODE="0666"
+    SUBSYSTEM=="scsi_generic", ATTRS{idVendor}=="0402", ATTRS{idProduct}=="3922", MODE="0666"
+  '';
+}
+```
+
+Then rebuild:
+
+```bash
+sudo nixos-rebuild switch
+```
+
+**Option B: Use nix-shell** (temporary, for testing)
+
+```bash
+nix-shell -p python3 python3Packages.pip python3Packages.pyqt6 python3Packages.pillow python3Packages.psutil sg3_utils ffmpeg
+```
+
+Then follow [Step 2](#step-2---download-trcc) and [Step 3](#step-3---install-python-dependencies) from inside the shell.
+
+> **NixOS note:** The `trcc setup-udev` command won't work on NixOS because udev rules are managed declaratively. Add the rules to your `configuration.nix` as shown in Option A instead.
+
+---
+
+### Void Linux
+
+Covers: Void Linux (glibc and musl)
+
+```bash
+# Required
+sudo xbps-install sg3_utils python3-pip python3-PyQt6 ffmpeg
+
+# Optional (screen capture on Wayland)
+sudo xbps-install grim python3-gobject python3-dbus python3-gst
+```
+
+> **Void musl note:** Some Python packages may not have pre-built wheels for musl. You may need `python3-devel` and a C compiler to build them:
+> ```bash
+> sudo xbps-install python3-devel gcc
+> ```
+
+> **Void note:** If `python3-PyQt6` is not in the repo, install via pip:
+> ```bash
+> sudo xbps-install python3-pip qt6-base
+> pip install PyQt6
+> ```
+
+---
+
+### Gentoo
+
+Covers: Gentoo Linux, Funtoo, Calculate Linux
+
+```bash
+# Required
+sudo emerge --ask sg3_utils dev-python/pip dev-python/PyQt6 media-video/ffmpeg
+
+# Optional (screen capture on Wayland)
+sudo emerge --ask gui-apps/grim dev-python/pygobject dev-python/dbus-python
+```
+
+> **USE flags:** Make sure your PyQt6 package has the `widgets` and `gui` USE flags enabled:
+> ```bash
+> echo "dev-python/PyQt6 widgets gui" | sudo tee -a /etc/portage/package.use/trcc
+> ```
+
+> **Gentoo note:** If `dev-python/PyQt6` is masked, you may need to unmask it:
+> ```bash
+> echo "dev-python/PyQt6 ~amd64" | sudo tee -a /etc/portage/package.accept_keywords/trcc
+> ```
+
+---
+
+### Alpine Linux
+
+Covers: Alpine Linux 3.18+, postmarketOS
+
+```bash
+# Required
+sudo apk add python3 py3-pip sg3_utils py3-pyqt6 ffmpeg
+
+# Optional
+sudo apk add grim py3-gobject3 py3-dbus
+```
+
+> **Alpine note:** Alpine uses musl libc. If `py3-pyqt6` isn't available in your release, you'll need to install from pip with build dependencies:
+> ```bash
+> sudo apk add python3-dev gcc musl-dev qt6-qtbase-dev
+> pip install PyQt6
+> ```
+
+---
+
+### Solus
+
+Covers: Solus 4.x (Budgie, GNOME, MATE, Plasma editions)
+
+```bash
+# Required
+sudo eopkg install sg3_utils python3-pip ffmpeg
+
+# PyQt6 (may need pip)
+pip install PyQt6
+
+# Optional (screen capture on Wayland)
+sudo eopkg install grim python3-gobject python3-dbus
+```
+
+---
+
+### Clear Linux
+
+Covers: Clear Linux OS (Intel)
+
+```bash
+# Required
+sudo swupd bundle-add python3-basic devpkg-sg3_utils ffmpeg
+
+# PyQt6 via pip (not bundled in Clear Linux)
+pip install PyQt6
+
+# Optional
+sudo swupd bundle-add devpkg-pipewire
+```
+
+> **Clear Linux note:** You may need to install `sg3_utils` from source or find it in an alternative bundle. Check `sudo swupd search sg3` for the current bundle name.
+
+---
 
 ### What each package does
 
 | Package | Why it's needed |
 |---------|----------------|
 | `python3-pip` | Installs Python packages (like TRCC itself) |
-| `sg3_utils` | Sends data to the LCD over USB (SCSI commands) |
+| `sg3_utils` | Sends data to the LCD over USB (SCSI commands) — **required** |
 | `PyQt6` / `python3-pyqt6` | The graphical user interface (GUI) toolkit |
 | `ffmpeg` | Video and GIF playback on the LCD |
 | `p7zip` / `7zip` | Extracts bundled theme `.7z` archives (optional if `py7zr` is installed) |
@@ -196,7 +422,7 @@ From inside the `thermalright-trcc-linux` folder, install the Python packages:
 pip install -e .
 ```
 
-**What this does:** Installs TRCC and its Python dependencies (Pillow for image processing, psutil for system sensors, requests for cloud themes, py7zr for extracting bundled theme archives). The `-e` flag means "editable" - if you update the code later (with `git pull`), you don't need to reinstall.
+**What this does:** Installs TRCC and its Python dependencies (Pillow for image processing, psutil for system sensors, py7zr for extracting bundled theme archives). The `-e` flag means "editable" - if you update the code later (with `git pull`), you don't need to reinstall.
 
 > **Note:** Some distributions require using a virtual environment. If the `pip install` command shows an "externally-managed-environment" error, use one of these approaches:
 >
@@ -210,6 +436,8 @@ pip install -e .
 > pip install -e .
 > # You'll need to run 'source venv/bin/activate' each time you open a new terminal
 > ```
+
+> **Distros that enforce this by default:** Fedora 38+, Ubuntu 23.04+, Debian 12+, Arch (with python 3.11+), openSUSE Tumbleweed, Void Linux
 
 ---
 
@@ -246,6 +474,8 @@ trcc setup-udev --dry-run
 **Unplug and replug your cooler's USB cable.** The new permissions take effect when the device reconnects.
 
 > **Why is this needed?** On Linux, USB devices default to root-only access. The udev rule changes this for Thermalright LCDs specifically. The USB quirk is needed because the kernel otherwise tries to use a protocol (UAS) that these displays don't support, which prevents the LCD from being detected at all.
+
+> **NixOS users:** Skip this step. Add the udev rules to your `configuration.nix` instead (see [NixOS section](#nixos)).
 
 ---
 
@@ -313,13 +543,19 @@ The application window will appear, showing the same interface as the Windows ve
 
 ---
 
-## Bazzite / Fedora Atomic Install
+## Immutable / Atomic Distros
 
-Bazzite, Aurora, Bluefin, and other Universal Blue / Fedora Atomic desktops use an **immutable root filesystem**. Standard `dnf install` doesn't work — you layer packages with `rpm-ostree` (requires reboot) or install userspace tools via `brew`, `pip`, or containers.
+These distros have read-only root filesystems. Standard package installation doesn't work the same way.
 
-This section walks through the full process.
+---
 
-### Why it's different
+### Bazzite / Fedora Atomic / Aurora / Bluefin
+
+Covers: Bazzite, Aurora, Bluefin, Fedora Silverblue, Fedora Kinoite, and all Universal Blue / Fedora Atomic desktops
+
+These use an **immutable root filesystem**. Standard `dnf install` doesn't work — you layer packages with `rpm-ostree` (requires reboot) or install userspace tools via `brew`, `pip`, or containers.
+
+#### Why it's different
 
 | Normal Fedora | Bazzite / Fedora Atomic |
 |---------------|-------------------------|
@@ -329,7 +565,7 @@ This section walks through the full process.
 
 The goal is to layer as little as possible onto the base image and do everything else in a Python virtual environment.
 
-### Step 1 — Layer `sg3_utils`
+#### Step 1 — Layer `sg3_utils`
 
 `sg3_utils` provides the `sg_raw` command that TRCC uses to send SCSI commands to the LCD over USB. This **must** be on the host system (not inside a container) because it needs direct access to `/dev/sg*` devices.
 
@@ -346,14 +582,14 @@ which sg_raw
 
 > **Note:** If you want to avoid layering and rebooting, you can also use `brew install sg3_utils` on Bazzite (Homebrew is pre-installed). However, the `rpm-ostree` approach is more reliable for system-level hardware tools.
 
-### Step 2 — Clone TRCC
+#### Step 2 — Clone TRCC
 
 ```bash
 git clone -b stable https://github.com/Lexonight1/thermalright-trcc-linux.git
 cd thermalright-trcc-linux
 ```
 
-### Step 3 — Create a Python virtual environment
+#### Step 3 — Create a Python virtual environment
 
 Bazzite's system Python is read-only, so a venv is **required** (not optional like on normal Fedora):
 
@@ -375,7 +611,7 @@ This pulls in PyQt6, Pillow, psutil, py7zr, and everything else TRCC needs.
 > echo 'alias trcc-env="source ~/trcc-env/bin/activate"' >> ~/.bashrc
 > ```
 
-### Step 4 — Install FFmpeg (for video/GIF playback)
+#### Step 4 — Install FFmpeg (for video/GIF playback)
 
 Bazzite ships FFmpeg by default. Verify with:
 
@@ -389,7 +625,7 @@ If for some reason it's missing:
 brew install ffmpeg
 ```
 
-### Step 5 — Set up device permissions
+#### Step 5 — Set up device permissions
 
 Udev rules live on the host filesystem and work the same as on normal Fedora:
 
@@ -406,14 +642,14 @@ sudo ~/trcc-env/bin/trcc setup-udev
 
 Then **unplug and replug** your cooler's USB cable.
 
-### Step 6 — Run TRCC
+#### Step 6 — Run TRCC
 
 ```bash
 source ~/trcc-env/bin/activate
 trcc gui
 ```
 
-### Optional: Create a desktop shortcut
+#### Optional: Create a desktop shortcut
 
 So you don't need to activate the venv manually each time:
 
@@ -431,7 +667,7 @@ Categories=Utility;System;
 EOF
 ```
 
-### Optional: Wayland screen capture
+#### Optional: Wayland screen capture
 
 Bazzite uses Wayland (KDE or GNOME) by default. For screen cast / eyedropper features, install the PipeWire bindings inside your venv:
 
@@ -442,7 +678,7 @@ pip install dbus-python PyGObject
 
 > **Note:** `pipewire` and `pipewire-devel` are already included in Bazzite's base image.
 
-### Alternative: Distrobox approach
+#### Alternative: Distrobox approach
 
 If you prefer full isolation, you can run TRCC inside a Distrobox container. This avoids layering anything with `rpm-ostree`:
 
@@ -452,7 +688,7 @@ distrobox create --name trcc --image fedora:latest
 distrobox enter trcc
 
 # Inside the container — normal Fedora commands work
-sudo dnf install python3-pip sg3_utils ffmpeg
+sudo dnf install python3-pip sg3_utils python3-pyqt6 ffmpeg
 git clone -b stable https://github.com/Lexonight1/thermalright-trcc-linux.git
 cd thermalright-trcc-linux
 pip install -e .
@@ -468,7 +704,7 @@ distrobox enter trcc -- trcc gui
 
 > **Caveat:** The udev rules and USB quirk still need to be set up on the **host** system. The Distrobox container can access `/dev/sg*` devices through the host, but permissions must be configured on the host side. You may need to run `setup-udev` directly on the host rather than through `distrobox-host-exec`.
 
-### Uninstalling on Bazzite
+#### Uninstalling on Bazzite
 
 ```bash
 # Remove the venv
@@ -489,6 +725,198 @@ sudo rm /etc/udev/rules.d/99-trcc-lcd.rules
 sudo rm /etc/modprobe.d/trcc-lcd.conf
 sudo udevadm control --reload-rules
 ```
+
+---
+
+### SteamOS (Steam Deck)
+
+Covers: SteamOS 3.x on Steam Deck (LCD and OLED models)
+
+SteamOS is an immutable Arch-based distro. The root filesystem is read-only by default, but you can temporarily unlock it.
+
+#### Option A: Unlock root filesystem (simpler, lost on SteamOS updates)
+
+Switch to Desktop Mode (hold Power button > Desktop Mode), then open Konsole:
+
+```bash
+# Disable read-only filesystem
+sudo steamos-readonly disable
+
+# Set a password if you haven't already
+passwd
+
+# Install system deps
+sudo pacman -S --needed sg3_utils python-pip python-pyqt6 ffmpeg
+
+# Clone and install
+git clone -b stable https://github.com/Lexonight1/thermalright-trcc-linux.git
+cd thermalright-trcc-linux
+pip install --break-system-packages -e .
+
+# Set up device permissions
+sudo trcc setup-udev
+# Unplug and replug USB cable
+
+# Re-enable read-only (optional, recommended)
+sudo steamos-readonly enable
+
+# Launch
+trcc gui
+```
+
+> **Warning:** `steamos-readonly disable` changes are lost when SteamOS updates. You'll need to re-install system packages after each update. Python packages installed with `pip --break-system-packages` persist in your home directory.
+
+#### Option B: Distrobox (survives updates)
+
+```bash
+# In Desktop Mode, open Konsole
+distrobox create --name trcc --image archlinux:latest
+distrobox enter trcc
+
+# Inside the container
+sudo pacman -S python-pip sg3_utils python-pyqt6 ffmpeg
+git clone -b stable https://github.com/Lexonight1/thermalright-trcc-linux.git
+cd thermalright-trcc-linux
+pip install -e .
+exit
+
+# Set up udev on the HOST (requires steamos-readonly disable temporarily)
+sudo steamos-readonly disable
+sudo distrobox-host-exec trcc setup-udev
+sudo steamos-readonly enable
+# Unplug and replug USB cable
+
+# Run from Distrobox
+distrobox enter trcc -- trcc gui
+```
+
+---
+
+### Vanilla OS
+
+Covers: Vanilla OS 2.x (Orchid)
+
+Vanilla OS uses `apx` (based on Distrobox) for package management:
+
+```bash
+# Create a Fedora subsystem
+apx subsystems create --name trcc-system --stack fedora
+
+# Install dependencies inside the subsystem
+apx trcc-system install python3-pip sg3_utils python3-pyqt6 ffmpeg
+
+# Clone and install
+git clone -b stable https://github.com/Lexonight1/thermalright-trcc-linux.git
+cd thermalright-trcc-linux
+
+# Enter the subsystem and install
+apx trcc-system enter
+pip install -e .
+exit
+
+# Udev rules must be applied on the host
+# Copy the rules manually (setup-udev won't work from inside apx)
+sudo cp /path/to/99-trcc-lcd.rules /etc/udev/rules.d/
+sudo udevadm control --reload-rules
+# Unplug and replug USB cable
+
+# Run
+apx trcc-system run -- trcc gui
+```
+
+---
+
+### ChromeOS (Crostini)
+
+Covers: ChromeOS with Linux development environment enabled (Crostini / Debian container)
+
+1. Enable Linux: Settings > Advanced > Developers > Turn On Linux development environment
+2. Open the Linux terminal, then follow the Debian instructions:
+
+```bash
+sudo apt update
+sudo apt install python3-pip python3-venv sg3-utils python3-pyqt6 ffmpeg
+
+git clone -b stable https://github.com/Lexonight1/thermalright-trcc-linux.git
+cd thermalright-trcc-linux
+pip install --break-system-packages -e .
+```
+
+> **ChromeOS limitation:** USB device passthrough to the Linux container requires enabling it in ChromeOS settings. Go to Settings > Advanced > Developers > Linux > Manage USB devices, and enable your Thermalright LCD device. You may also need to run `trcc setup-udev` inside the container and replug the USB device.
+
+```bash
+sudo trcc setup-udev
+trcc gui
+```
+
+---
+
+## Special Hardware
+
+---
+
+### Asahi Linux (Apple Silicon)
+
+Covers: Fedora Asahi Remix on Apple M1/M2/M3/M4 Macs
+
+Asahi Linux uses the Fedora Asahi Remix. Follow the standard [Fedora instructions](#fedora--rhel--centos-stream--rocky--alma):
+
+```bash
+sudo dnf install python3-pip sg3_utils python3-pyqt6 ffmpeg
+git clone -b stable https://github.com/Lexonight1/thermalright-trcc-linux.git
+cd thermalright-trcc-linux
+pip install -e .
+sudo trcc setup-udev
+```
+
+> **Apple Silicon note:** USB-A ports on Apple Silicon Macs work through Thunderbolt hubs/docks. Make sure your USB connection to the cooler is going through a compatible hub. Direct USB-C adapters should also work.
+
+---
+
+### Raspberry Pi / ARM SBCs
+
+Covers: Raspberry Pi OS (Bookworm), Ubuntu for Raspberry Pi, Armbian
+
+TRCC works on ARM64 (aarch64) systems. The SCSI protocol and LCD communication are architecture-independent.
+
+```bash
+# Raspberry Pi OS / Armbian (Debian-based)
+sudo apt install python3-pip python3-venv sg3-utils python3-pyqt6 ffmpeg
+
+git clone -b stable https://github.com/Lexonight1/thermalright-trcc-linux.git
+cd thermalright-trcc-linux
+pip install -e .
+sudo trcc setup-udev
+```
+
+> **ARM note:** PyQt6 wheels may not be available for ARM. If `pip install PyQt6` fails, use the system package (`python3-pyqt6`) or build from source. The CLI commands (`trcc send`, `trcc test`, `trcc color`) work without PyQt6 — only the GUI requires it.
+
+> **Headless usage:** If you're running on a Pi without a display, you can still use the CLI to send images to the LCD:
+> ```bash
+> trcc send /path/to/image.png
+> trcc color ff0000
+> ```
+
+---
+
+### WSL2 (Windows Subsystem for Linux)
+
+Covers: WSL2 on Windows 10/11
+
+> **You probably want the Windows version instead.** WSL2 has limited USB passthrough and you'd need the official Windows TRCC app for the best experience. However, if you want to use the Linux version:
+
+WSL2 requires `usbipd-win` to pass USB devices through:
+
+1. **On Windows:** Install [usbipd-win](https://github.com/dorssel/usbipd-win) from the Microsoft Store or GitHub
+2. **On Windows (PowerShell as admin):**
+   ```powershell
+   usbipd list                          # Find your Thermalright device
+   usbipd bind --busid <BUSID>          # Bind it
+   usbipd attach --wsl --busid <BUSID>  # Attach to WSL
+   ```
+3. **Inside WSL2:** Follow the [Ubuntu/Debian instructions](#ubuntu--debian--linux-mint--pop_os--zorin--elementary)
+
+> **WSL2 note:** You need to re-attach the USB device every time you restart WSL or unplug the device. GUI apps require WSLg (included in Windows 11 and recent Windows 10 updates).
 
 ---
 
@@ -647,6 +1075,10 @@ pip uninstall PyQt6 PyQt6-Qt6 PyQt6-sip
 # Arch
 sudo pacman -S python-pyqt6
 pip uninstall PyQt6 PyQt6-Qt6 PyQt6-sip
+
+# openSUSE
+sudo zypper install python3-qt6
+pip uninstall PyQt6 PyQt6-Qt6 PyQt6-sip
 ```
 
 **Fix (alternative):** If the system package isn't available, force the pip PyQt6 to use its own bundled Qt6 libraries:
@@ -671,14 +1103,29 @@ trcc reset
 
 **Fix:** Install ffmpeg for your distro (see Step 1):
 ```bash
-# Fedora
+# Fedora / Nobara
 sudo dnf install ffmpeg
 
-# Ubuntu/Debian
+# Ubuntu / Debian
 sudo apt install ffmpeg
 
-# Arch
+# Arch / CachyOS / Garuda
 sudo pacman -S ffmpeg
+
+# openSUSE
+sudo zypper install ffmpeg
+
+# Void
+sudo xbps-install ffmpeg
+
+# Gentoo
+sudo emerge media-video/ffmpeg
+
+# Alpine
+sudo apk add ffmpeg
+
+# NixOS — add to configuration.nix:
+#   environment.systemPackages = [ pkgs.ffmpeg ];
 ```
 
 ### GUI looks wrong / elements overlapping
@@ -692,7 +1139,7 @@ QT_AUTO_SCREEN_SCALE_FACTOR=0 trcc gui
 
 ### "externally-managed-environment" error during pip install
 
-**Cause:** Your distro protects system Python packages (common on Fedora 38+, Ubuntu 23.04+).
+**Cause:** Your distro protects system Python packages (common on Fedora 38+, Ubuntu 23.04+, Debian 12+, Arch, openSUSE Tumbleweed).
 
 **Fix:** Use one of these approaches:
 ```bash
@@ -712,19 +1159,51 @@ pip install -e .
 
 **Fix:** Install PipeWire dependencies:
 ```bash
-# Fedora
+# Fedora / Nobara
 sudo dnf install python3-gobject python3-dbus pipewire-devel
 
-# Ubuntu/Debian
+# Ubuntu / Debian
 sudo apt install python3-gi python3-dbus python3-gst-1.0
 
-# Arch
+# Arch / CachyOS / Garuda
 sudo pacman -S python-gobject python-dbus python-gst
+
+# openSUSE
+sudo zypper install python3-gobject python3-dbus-python python3-gstreamer
 ```
 
 When you enable Screen Cast, a system dialog will pop up asking you to grant permission. This is normal — select the screen/monitor you want to capture and click "Share".
 
 > **Note:** Screen cast works automatically on X11 and Wayland with wlroots-based compositors (Sway, Hyprland). The PipeWire portal is only needed for GNOME and KDE Wayland sessions.
+
+### Device detected but nothing displays / sg_raw errors
+
+**Cause:** The UAS (USB Attached SCSI) kernel driver interferes with these LCD devices.
+
+**Fix:** The `trcc setup-udev` command should have created a USB quirk file. Verify it exists:
+```bash
+cat /etc/modprobe.d/trcc-lcd.conf
+```
+
+If it's missing, recreate it:
+```bash
+sudo trcc setup-udev
+# Unplug and replug USB cable
+```
+
+If the problem persists, try manually blacklisting UAS for your device:
+```bash
+echo "options usb-storage quirks=87cd:70db:u,0416:5406:u,0402:3922:u" | sudo tee /etc/modprobe.d/trcc-lcd.conf
+sudo update-initramfs -u  # Debian/Ubuntu
+# or
+sudo dracut --force       # Fedora/RHEL
+```
+
+### NixOS: "trcc setup-udev" doesn't work
+
+**Cause:** NixOS manages udev rules declaratively. The `setup-udev` command can't write to `/etc/udev/rules.d/`.
+
+**Fix:** Add the rules to your `configuration.nix` (see [NixOS section](#nixos)).
 
 ---
 
@@ -745,6 +1224,18 @@ This prints either `x11` or `wayland`.
 - **Screen capture:** Works via PipeWire portal (requires permission dialog on first use)
 - **Eyedropper color picker:** Uses the same PipeWire portal for screen access
 - **Window decorations:** The app uses its own custom title bar by default on both X11 and Wayland. Use `--decorated` if you prefer your desktop's native title bar.
+
+### Compositors and screen capture
+
+| Compositor | Screen capture method | Notes |
+|------------|----------------------|-------|
+| GNOME (Mutter) | PipeWire portal | Needs `python3-gobject` + `python3-dbus` |
+| KDE (KWin) | PipeWire portal | Needs `python3-gobject` + `python3-dbus` |
+| Sway | `grim` / wlr-screencopy | Works out of the box with `grim` installed |
+| Hyprland | `grim` / wlr-screencopy | Works out of the box with `grim` installed |
+| Wayfire | `grim` / wlr-screencopy | Works out of the box with `grim` installed |
+| River | `grim` / wlr-screencopy | Works out of the box with `grim` installed |
+| X11 (any WM/DE) | Native X11 capture | Works everywhere, no extra deps |
 
 Everything else (themes, overlays, video playback, device communication) works identically on both X11 and Wayland.
 
