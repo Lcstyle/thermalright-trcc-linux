@@ -17,14 +17,13 @@ Windows controls (from UCAbout.cs):
 import webbrowser
 from pathlib import Path
 
-from PyQt6.QtWidgets import QPushButton, QLabel, QLineEdit
 from PyQt6.QtCore import Qt, pyqtSignal
-from PyQt6.QtGui import QPalette, QBrush, QIcon, QIntValidator
+from PyQt6.QtGui import QBrush, QIcon, QIntValidator, QPalette
+from PyQt6.QtWidgets import QLabel, QLineEdit, QPushButton
 
+from .assets import Assets, load_pixmap
 from .base import BasePanel, create_image_button
-from .assets import load_pixmap, Assets
-from .constants import Colors, Sizes, Layout, Styles
-
+from .constants import Layout, Sizes, Styles
 
 # Linux autostart desktop file
 _AUTOSTART_DIR = Path.home() / '.config' / 'autostart'

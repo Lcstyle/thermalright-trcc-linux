@@ -6,11 +6,18 @@ Provides pan, zoom, rotation, and fit-mode controls for cropping
 images to LCD target resolution.
 """
 
-from PyQt6.QtWidgets import QWidget, QPushButton, QLabel
-from PyQt6.QtCore import Qt, pyqtSignal, QSize, QPoint
+from PyQt6.QtCore import QPoint, QSize, Qt, pyqtSignal
 from PyQt6.QtGui import (
-    QPainter, QColor, QPen, QBrush, QPixmap, QPalette, QIcon, QImage,
+    QBrush,
+    QColor,
+    QIcon,
+    QImage,
+    QPainter,
+    QPalette,
+    QPen,
+    QPixmap,
 )
+from PyQt6.QtWidgets import QPushButton, QWidget
 
 from .assets import load_pixmap
 from .constants import Styles

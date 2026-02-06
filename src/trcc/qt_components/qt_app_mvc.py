@@ -15,41 +15,57 @@ import locale
 import sys
 from pathlib import Path
 
-from PyQt6.QtWidgets import (
-    QApplication, QMainWindow, QWidget, QPushButton,
-    QStackedWidget, QFileDialog, QComboBox, QLineEdit,
-    QSystemTrayIcon, QMenu,
-)
-from PyQt6.QtCore import Qt, QSize, QTimer
-from PyQt6.QtGui import QFont, QPalette, QColor, QIcon, QRegularExpressionValidator
 from PyQt6.QtCore import QRegularExpression as QRE
+from PyQt6.QtCore import QSize, Qt, QTimer
+from PyQt6.QtGui import QColor, QFont, QIcon, QPalette, QRegularExpressionValidator
+from PyQt6.QtWidgets import (
+    QApplication,
+    QComboBox,
+    QFileDialog,
+    QLineEdit,
+    QMainWindow,
+    QMenu,
+    QPushButton,
+    QStackedWidget,
+    QSystemTrayIcon,
+    QWidget,
+)
 
 # Import MVC core
 from ..core import (
-    FormCZTVController, create_controller,
-    ThemeInfo, DeviceInfo, PlaybackState,
+    DeviceInfo,
+    PlaybackState,
+    ThemeInfo,
+    create_controller,
 )
+from ..dc_writer import CarouselConfig, read_carousel_config, write_carousel_config
+from ..paths import (
+    device_config_key,
+    get_device_config,
+    get_saved_temp_unit,
+    get_web_dir,
+    get_web_masks_dir,
+    save_device_setting,
+    save_temp_unit,
+)
+from ..sensor_enumerator import SensorEnumerator
 
 # Import view components
-from .assets import load_pixmap, Assets
+from .assets import Assets, load_pixmap
 from .base import create_image_button, set_background_pixmap
-from .constants import Colors, Sizes, Layout, Styles
-from .uc_device import UCDevice
-from .uc_preview import UCPreview
-from .uc_theme_local import UCThemeLocal
-from .uc_theme_web import UCThemeWeb
-from .uc_theme_mask import UCThemeMask
-from .uc_theme_setting import UCThemeSetting
+from .constants import Colors, Layout, Sizes, Styles
 from .uc_about import UCAbout
-from .uc_system_info import UCSystemInfo
-from ..sensor_enumerator import SensorEnumerator
-from .uc_video_cut import UCVideoCut
+from .uc_activity_sidebar import UCActivitySidebar
+from .uc_device import UCDevice
 from .uc_image_cut import UCImageCut
 from .uc_info_module import UCInfoModule
-from .uc_activity_sidebar import UCActivitySidebar
-from ..dc_writer import CarouselConfig, write_carousel_config, read_carousel_config
-from ..paths import get_web_dir, get_web_masks_dir, get_saved_temp_unit, save_temp_unit
-from ..paths import device_config_key, get_device_config, save_device_setting
+from .uc_preview import UCPreview
+from .uc_system_info import UCSystemInfo
+from .uc_theme_local import UCThemeLocal
+from .uc_theme_mask import UCThemeMask
+from .uc_theme_setting import UCThemeSetting
+from .uc_theme_web import UCThemeWeb
+from .uc_video_cut import UCVideoCut
 
 # Language code mapping: system locale -> Windows asset suffix
 LOCALE_TO_LANG = {
@@ -984,7 +1000,7 @@ class TRCCMainWindowMVC(QMainWindow):
         _on_screencast_tick() will use PipeWire frames instead of
         grab_screen_region().
         """
-        from .pipewire_capture import PipeWireScreenCast, PIPEWIRE_AVAILABLE
+        from .pipewire_capture import PIPEWIRE_AVAILABLE, PipeWireScreenCast
         if not PIPEWIRE_AVAILABLE:
             return
 
@@ -1463,8 +1479,8 @@ class TRCCMainWindowMVC(QMainWindow):
 
         # Fallback: X11 / grim direct capture
         if pil_img is None:
-            from .screen_capture import grab_screen_region
             from .base import pixmap_to_pil
+            from .screen_capture import grab_screen_region
 
             pixmap = grab_screen_region(
                 self._screencast_x, self._screencast_y,
@@ -1526,7 +1542,7 @@ class TRCCMainWindowMVC(QMainWindow):
         if not dc_path.exists():
             return
         try:
-            from ..dc_parser import parse_dc_file, dc_to_overlay_config
+            from ..dc_parser import dc_to_overlay_config, parse_dc_file
             dc_data = parse_dc_file(dc_path)
             overlay_config = dc_to_overlay_config(dc_data)
             self.uc_theme_setting.load_from_overlay_config(overlay_config)

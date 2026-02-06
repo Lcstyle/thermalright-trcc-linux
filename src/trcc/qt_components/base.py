@@ -10,16 +10,21 @@ Provides common functionality:
 - create_image_button: flat image button factory
 """
 
-from PyQt6.QtWidgets import (
-    QFrame, QWidget, QVBoxLayout, QLabel, QPushButton,
-    QScrollArea, QGridLayout
-)
-from PyQt6.QtCore import Qt, pyqtSignal
-from PyQt6.QtGui import QPixmap, QImage, QPalette, QBrush, QColor, QIcon
-
 from pathlib import Path
 
-from .constants import Colors, Sizes, Layout, Styles
+from PyQt6.QtCore import Qt, pyqtSignal
+from PyQt6.QtGui import QBrush, QIcon, QImage, QPalette, QPixmap
+from PyQt6.QtWidgets import (
+    QFrame,
+    QGridLayout,
+    QLabel,
+    QPushButton,
+    QScrollArea,
+    QVBoxLayout,
+    QWidget,
+)
+
+from .constants import Colors, Layout, Sizes, Styles
 
 try:
     from PIL import Image
@@ -230,7 +235,7 @@ def create_image_button(parent, x, y, w, h, normal_img, active_img,
     Returns:
         QPushButton
     """
-    from .assets import load_pixmap, asset_exists
+    from .assets import load_pixmap
 
     btn = QPushButton(parent)
     btn.setGeometry(x, y, w, h)

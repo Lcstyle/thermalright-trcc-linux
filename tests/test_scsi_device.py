@@ -5,11 +5,11 @@ import struct
 import unittest
 
 from trcc.scsi_device import (
+    _CHUNK_SIZE,
+    _FRAME_CMD_BASE,
     _build_header,
     _crc32,
     _get_frame_chunks,
-    _CHUNK_SIZE,
-    _FRAME_CMD_BASE,
 )
 
 

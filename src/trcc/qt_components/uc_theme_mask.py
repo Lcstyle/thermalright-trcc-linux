@@ -8,8 +8,7 @@ Shows cloud layout masks with download functionality.
 import threading
 from pathlib import Path
 
-from PyQt6.QtWidgets import QLabel
-from PyQt6.QtCore import Qt, pyqtSignal, QTimer
+from PyQt6.QtCore import QTimer, pyqtSignal
 
 from .base import BaseThemeBrowser, BaseThumbnail, pil_to_pixmap
 from .constants import Colors, Sizes, Styles
@@ -162,7 +161,7 @@ class UCThemeMask(BaseThemeBrowser):
     def _download_cloud_mask(self, mask_id: str):
         """Download a cloud mask from the server."""
         if not self.mask_directory or not self._resolution:
-            print(f"[!] Cannot download mask: directory or resolution not set")
+            print("[!] Cannot download mask: directory or resolution not set")
             return
 
         base_url = self.CLOUD_URLS.get(self._resolution)
@@ -174,10 +173,10 @@ class UCThemeMask(BaseThemeBrowser):
 
         def download_task():
             try:
-                import urllib.request
-                import urllib.error
-                import zipfile
                 import io
+                import urllib.error
+                import urllib.request
+                import zipfile
 
                 mask_url = f"{base_url}{mask_id}.zip"
                 mask_dir = self.mask_directory / mask_id
@@ -222,8 +221,8 @@ class UCThemeMask(BaseThemeBrowser):
 
     def _download_mask_files(self, mask_id: str, base_url: str, mask_dir: Path):
         """Download individual mask files."""
-        import urllib.request
         import urllib.error
+        import urllib.request
 
         mask_dir.mkdir(parents=True, exist_ok=True)
         files = ['Theme.png', '01.png', 'config1.dc']

@@ -13,26 +13,26 @@ Tests cover:
 - check_device_health() via sg_inq
 """
 
-import unittest
-import sys
 import os
-from unittest.mock import patch, mock_open, MagicMock
+import sys
+import unittest
 from dataclasses import fields
+from unittest.mock import MagicMock, mock_open, patch
 
 # Add parent directory to path
 sys.path.insert(0, os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), 'src'))
 
 from trcc.device_detector import (
-    DetectedDevice,
     KNOWN_DEVICES,
-    run_command,
-    find_usb_devices,
+    DetectedDevice,
+    check_device_health,
+    detect_devices,
     find_scsi_device_by_usb_path,
     find_scsi_usblcd_devices,
-    detect_devices,
+    find_usb_devices,
     get_default_device,
     get_device_path,
-    check_device_health,
+    run_command,
     usb_reset_device,
 )
 

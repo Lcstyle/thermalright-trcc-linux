@@ -9,17 +9,20 @@ Used by the System Info dashboard to let users assign any sensor to any
 panel row.
 """
 
+from PyQt6.QtCore import QSize, Qt, QTimer, pyqtSignal
+from PyQt6.QtGui import QBrush, QIcon, QPalette
 from PyQt6.QtWidgets import (
-    QDialog, QWidget, QScrollArea, QLabel, QPushButton, QVBoxLayout,
+    QDialog,
+    QLabel,
+    QPushButton,
+    QScrollArea,
+    QVBoxLayout,
+    QWidget,
 )
-from PyQt6.QtCore import Qt, QTimer, pyqtSignal, QSize
-from PyQt6.QtGui import QPalette, QBrush, QIcon
-
-from .assets import load_pixmap, Assets
-from .constants import Styles
 
 from ..sensor_enumerator import SensorEnumerator, SensorInfo
-
+from .assets import Assets, load_pixmap
+from .constants import Styles
 
 # Dialog dimensions (matches Windows FormSystemInfo)
 DIALOG_W = 490

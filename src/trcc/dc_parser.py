@@ -9,9 +9,9 @@ Based on decompiled Windows TRCC code:
 """
 
 import struct
+from dataclasses import dataclass
 from pathlib import Path
-from dataclasses import dataclass, field
-from typing import Optional, List
+from typing import List, Optional
 
 
 @dataclass
@@ -439,7 +439,7 @@ def parse_dc_file(filepath: str) -> dict:
 
             result['display_elements'] = display_elements
 
-        except (struct.error, IndexError) as e:
+        except (struct.error, IndexError):
             # If parsing fails, fall back to defaults
             pass
     else:
@@ -447,7 +447,7 @@ def parse_dc_file(filepath: str) -> dict:
         try:
             display_elements = parse_display_elements(data, pos)
             result['display_elements'] = display_elements
-        except Exception as e:
+        except Exception:
             # Display elements may not exist in all config files
             pass
 
@@ -748,7 +748,7 @@ def parse_display_elements(data: bytes, start_pos: int) -> List[DisplayElement]:
             )
             elements.append(elem)
 
-        except (struct.error, IndexError) as e:
+        except (struct.error, IndexError):
             break
 
     return elements
@@ -928,8 +928,8 @@ def list_theme_configs(base_path: str) -> list:
 
 
 if __name__ == '__main__':
-    import sys
     import json
+    import sys
 
     if len(sys.argv) < 2:
         dc_path = "/home/ignorant/Downloads/TRCCCAPEN/Data/USBLCD/Theme320320/Theme1/config1.dc"
@@ -947,7 +947,7 @@ if __name__ == '__main__':
         print(f"  [{i}] {font.name}: size={font.size:.1f}, style={font.style}, "
               f"color=({font.color_argb[1]},{font.color_argb[2]},{font.color_argb[3]})")
 
-    print(f"\nElement Positions:")
+    print("\nElement Positions:")
     for name, elem in config['elements'].items():
         color_str = ""
         if elem.font:
@@ -961,7 +961,7 @@ if __name__ == '__main__':
             print(f"  [{i}] {elem.mode_name}: x={elem.x}, y={elem.y}, "
                   f"format={elem.mode_sub}, color={elem.color_hex}")
 
-    print(f"\nOverlay Config (for renderer):")
+    print("\nOverlay Config (for renderer):")
     overlay = dc_to_overlay_config(config)
     print(json.dumps(overlay, indent=2))
 

@@ -10,11 +10,15 @@ Matches Windows FormGetColor functionality:
 Uses the same grab_full_screen() utility as ScreenCaptureOverlay.
 """
 
-from PyQt6.QtWidgets import QWidget, QApplication
-from PyQt6.QtCore import Qt, QPoint, QRect, pyqtSignal
+from PyQt6.QtCore import QPoint, Qt, pyqtSignal
 from PyQt6.QtGui import (
-    QPainter, QColor, QPen, QPixmap, QFont, QImage, QCursor,
+    QColor,
+    QFont,
+    QPainter,
+    QPen,
+    QPixmap,
 )
+from PyQt6.QtWidgets import QApplication, QWidget
 
 from .screen_capture import grab_full_screen
 

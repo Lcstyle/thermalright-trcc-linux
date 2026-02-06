@@ -5,9 +5,9 @@ Shows 4 sensor boxes (CPU temp, GPU temp, CPU%, GPU%) above the preview.
 Matches Windows TRCC Information Module functionality.
 """
 
-from PyQt6.QtWidgets import QWidget, QHBoxLayout, QVBoxLayout, QLabel, QFrame
 from PyQt6.QtCore import Qt, QTimer
-from PyQt6.QtGui import QPalette, QColor
+from PyQt6.QtGui import QColor, QPalette
+from PyQt6.QtWidgets import QFrame, QHBoxLayout, QLabel, QVBoxLayout, QWidget
 
 # Import system info (GUI-independent data layer)
 try:

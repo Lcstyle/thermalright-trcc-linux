@@ -1,6 +1,5 @@
 """Tests for core/models.py – ThemeInfo, ThemeModel, DeviceModel, VideoState."""
 
-import os
 import tempfile
 import unittest
 from pathlib import Path
@@ -12,13 +11,11 @@ from trcc.core.models import (
     OverlayElement,
     OverlayElementType,
     OverlayModel,
-    PlaybackState,
     ThemeInfo,
     ThemeModel,
     ThemeType,
     VideoState,
 )
-
 
 # =============================================================================
 # ThemeInfo

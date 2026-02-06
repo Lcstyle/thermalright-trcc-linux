@@ -10,29 +10,28 @@ Architecture:
 - Views: GUI-specific widgets (in components/ or qt_components/)
 """
 
+from .controllers import (
+    DeviceController,
+    FormCZTVController,
+    OverlayController,
+    ThemeController,
+    VideoController,
+    create_controller,
+)
 from .models import (
-    # Enums
-    ThemeType,
-    PlaybackState,
+    DeviceInfo,
+    DeviceModel,
+    OverlayElement,
     OverlayElementType,
+    OverlayModel,
+    PlaybackState,
     # Data classes
     ThemeInfo,
     ThemeModel,
-    DeviceInfo,
-    DeviceModel,
-    VideoState,
+    # Enums
+    ThemeType,
     VideoModel,
-    OverlayElement,
-    OverlayModel,
-)
-
-from .controllers import (
-    ThemeController,
-    DeviceController,
-    VideoController,
-    OverlayController,
-    FormCZTVController,
-    create_controller,
+    VideoState,
 )
 
 __all__ = [

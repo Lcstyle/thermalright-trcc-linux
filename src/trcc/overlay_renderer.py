@@ -6,6 +6,7 @@ onto theme backgrounds for LCD display.
 """
 
 import os
+
 from PIL import Image, ImageDraw, ImageFont
 
 # Try to import format_metric for system info display

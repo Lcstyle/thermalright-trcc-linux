@@ -5,10 +5,10 @@ Reads CPU/GPU temps, usage, frequencies from hwmon and lm_sensors
 """
 
 import os
-import subprocess
 import re
+import subprocess
 from datetime import datetime
-from typing import Dict, Optional, Tuple
+from typing import Dict, Optional
 
 # Try to import psutil for cross-platform system monitoring
 try:
@@ -40,7 +40,7 @@ def find_hwmon_by_name(name: str) -> Optional[str]:
     hwmon_base = "/sys/class/hwmon"
     if not os.path.exists(hwmon_base):
         return None
-    
+
     for i in range(20):
         hwmon_path = f"{hwmon_base}/hwmon{i}"
         name_file = f"{hwmon_path}/name"
@@ -57,14 +57,14 @@ def get_cpu_temperature() -> Optional[float]:
     if not hwmon:
         # Try coretemp (Intel)
         hwmon = find_hwmon_by_name("coretemp")
-    
+
     if hwmon:
         # Try temp1_input first (Tctl on AMD)
         for idx in [1, 2, 3]:
             temp = read_file(f"{hwmon}/temp{idx}_input")
             if temp:
                 return float(temp) / 1000.0
-    
+
     # Fallback: try lm_sensors
     try:
         result = subprocess.run(['sensors', '-u'], capture_output=True, text=True, timeout=5)
@@ -75,7 +75,7 @@ def get_cpu_temperature() -> Optional[float]:
                     return float(match.group(1))
     except:
         pass
-    
+
     return None
 
 
@@ -92,16 +92,16 @@ def get_cpu_usage() -> Optional[float]:
                 system = int(parts[3])
                 idle = int(parts[4])
                 iowait = int(parts[5]) if len(parts) > 5 else 0
-                
+
                 total = user + nice + system + idle + iowait
                 active = user + nice + system
-                
+
                 # Need previous values for delta calculation
                 # For simplicity, just return a rough estimate
                 return min(100.0, (active / total) * 100) if total > 0 else 0.0
     except:
         pass
-    
+
     # Fallback: use /proc/loadavg
     try:
         loadavg = read_file('/proc/loadavg')
@@ -111,7 +111,7 @@ def get_cpu_usage() -> Optional[float]:
             return min(100.0, load * 10)
     except:
         pass
-    
+
     return None
 
 
@@ -121,7 +121,7 @@ def get_cpu_frequency() -> Optional[float]:
     freq = read_file('/sys/devices/system/cpu/cpu0/cpufreq/scaling_cur_freq')
     if freq:
         return float(freq) / 1000.0  # Convert to MHz
-    
+
     # Fallback: /proc/cpuinfo
     try:
         with open('/proc/cpuinfo', 'r') as f:
@@ -132,7 +132,7 @@ def get_cpu_frequency() -> Optional[float]:
                         return float(match.group(1))
     except:
         pass
-    
+
     return None
 
 
@@ -144,7 +144,7 @@ def get_gpu_temperature() -> Optional[float]:
         temp = read_file(f"{hwmon}/temp1_input")
         if temp:
             return float(temp) / 1000.0
-    
+
     # NVIDIA GPU
     try:
         result = subprocess.run(
@@ -155,7 +155,7 @@ def get_gpu_temperature() -> Optional[float]:
             return float(result.stdout.strip())
     except:
         pass
-    
+
     return None
 
 
@@ -168,7 +168,7 @@ def get_gpu_usage() -> Optional[float]:
         usage = read_file(f"{hwmon}/device/gpu_busy_percent")
         if usage:
             return float(usage)
-    
+
     # NVIDIA GPU
     try:
         result = subprocess.run(
@@ -179,7 +179,7 @@ def get_gpu_usage() -> Optional[float]:
             return float(result.stdout.strip())
     except:
         pass
-    
+
     return None
 
 
@@ -191,7 +191,7 @@ def get_gpu_clock() -> Optional[float]:
         freq = read_file(f"{hwmon}/freq1_input")
         if freq:
             return float(freq) / 1000000.0  # Convert to MHz
-    
+
     # NVIDIA GPU
     try:
         result = subprocess.run(
@@ -202,7 +202,7 @@ def get_gpu_clock() -> Optional[float]:
             return float(result.stdout.strip())
     except:
         pass
-    
+
     return None
 
 
@@ -217,16 +217,16 @@ def get_memory_usage() -> Optional[float]:
                     key = parts[0].strip()
                     value = int(parts[1].strip().split()[0])
                     meminfo[key] = value
-            
+
             total = meminfo.get('MemTotal', 0)
             available = meminfo.get('MemAvailable', 0)
-            
+
             if total > 0:
                 used = total - available
                 return (used / total) * 100
     except:
         pass
-    
+
     return None
 
 
@@ -507,7 +507,7 @@ def get_fan_speeds() -> Dict[str, float]:
 def get_all_metrics() -> Dict[str, float]:
     """Get all system metrics"""
     metrics = {}
-    
+
     # Add date and time (store as numeric values)
     now = datetime.now()
     metrics['date_year'] = now.year
@@ -517,36 +517,36 @@ def get_all_metrics() -> Dict[str, float]:
     metrics['time_minute'] = now.minute
     metrics['time_second'] = now.second
     metrics['day_of_week'] = now.weekday()  # 0=Monday, 6=Sunday
-    
+
     # Add special combined keys for display (value doesn't matter, format_metric handles it)
     metrics['date'] = 0  # Placeholder - format_metric generates the actual date string
     metrics['time'] = 0  # Placeholder - format_metric generates the actual time string
     metrics['weekday'] = 0  # Placeholder - format_metric generates weekday string
-    
+
     cpu_temp = get_cpu_temperature()
     if cpu_temp is not None:
         metrics['cpu_temp'] = cpu_temp
-    
+
     cpu_usage = get_cpu_usage()
     if cpu_usage is not None:
         metrics['cpu_percent'] = cpu_usage
-    
+
     cpu_freq = get_cpu_frequency()
     if cpu_freq is not None:
         metrics['cpu_freq'] = cpu_freq
-    
+
     gpu_temp = get_gpu_temperature()
     if gpu_temp is not None:
         metrics['gpu_temp'] = gpu_temp
-    
+
     gpu_usage = get_gpu_usage()
     if gpu_usage is not None:
         metrics['gpu_usage'] = gpu_usage
-    
+
     gpu_clock = get_gpu_clock()
     if gpu_clock is not None:
         metrics['gpu_clock'] = gpu_clock
-    
+
     mem_usage = get_memory_usage()
     if mem_usage is not None:
         metrics['mem_percent'] = mem_usage
@@ -677,7 +677,7 @@ def format_metric(metric: str, value: float, time_format: int = 0, date_format: 
 if __name__ == '__main__':
     print("System Info Test")
     print("=" * 40)
-    
+
     metrics = get_all_metrics()
     for key, value in metrics.items():
         print(f"{key}: {format_metric(key, value)}")

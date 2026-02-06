@@ -27,17 +27,17 @@ __version__ = "1.0.0"
 __author__ = "TRCC Linux Contributors"
 
 # Core exports
-from trcc.lcd_driver import LCDDriver
+from trcc.dc_parser import dc_to_overlay_config, parse_dc_file
 from trcc.device_detector import detect_devices, get_device_path
-from trcc.system_info import get_all_metrics, format_metric
-from trcc.dc_parser import parse_dc_file, dc_to_overlay_config
 
 # Animation
 from trcc.gif_animator import GIFAnimator, GIFThemeLoader
+from trcc.lcd_driver import LCDDriver
+from trcc.system_info import format_metric, get_all_metrics
 
 # Optional video support
 try:
-    from trcc.gif_animator import VideoPlayer, OPENCV_AVAILABLE
+    from trcc.gif_animator import OPENCV_AVAILABLE, VideoPlayer
 except ImportError:
     VideoPlayer = None
     OPENCV_AVAILABLE = False

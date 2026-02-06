@@ -5,13 +5,9 @@ Shows real-time hardware sensor values that can be clicked to add to overlay.
 Matches Windows TRCC right-side Activity panel.
 """
 
-from PyQt6.QtWidgets import (
-    QWidget, QVBoxLayout, QHBoxLayout, QLabel, QFrame, QScrollArea
-)
 from PyQt6.QtCore import Qt, QTimer, pyqtSignal
 from PyQt6.QtGui import QColor, QPalette
-
-from .constants import Colors
+from PyQt6.QtWidgets import QFrame, QHBoxLayout, QLabel, QScrollArea, QVBoxLayout, QWidget
 
 # Import system info (GUI-independent data layer)
 try:
@@ -112,7 +108,7 @@ class SensorItem(QFrame):
 
         # Sensor name
         name_lbl = QLabel(label)
-        name_lbl.setStyleSheet(f"color: #AAAAAA; font-size: 9px; background: transparent;")
+        name_lbl.setStyleSheet("color: #AAAAAA; font-size: 9px; background: transparent;")
         name_lbl.setFixedWidth(70)
         layout.addWidget(name_lbl)
 

@@ -4,9 +4,9 @@ Device-specific implementations for different LCD variants.
 Each implementation can override protocol details, timing, and commands.
 """
 
-from abc import ABC, abstractmethod
-from typing import Optional, Tuple
 import struct
+from abc import ABC, abstractmethod
+from typing import Tuple
 
 
 class LCDDeviceImplementation(ABC):

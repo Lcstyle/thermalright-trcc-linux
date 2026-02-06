@@ -13,18 +13,18 @@ Usage:
 Theme packs are stored in ~/.trcc/themes/{resolution}/
 """
 
-import os
-import sys
-import json
-import shutil
-import tarfile
-import zipfile
-import tempfile
 import hashlib
+import json
+import os
+import shutil
+import sys
+import tarfile
+import tempfile
+import zipfile
 from pathlib import Path
-from urllib.request import urlopen, Request
-from urllib.error import URLError, HTTPError
-from typing import Optional, Dict, List, Tuple
+from typing import Dict, Optional
+from urllib.error import HTTPError, URLError
+from urllib.request import Request, urlopen
 
 # Theme pack registry - maps pack names to download info
 # In production, this would be fetched from a remote registry
@@ -157,12 +157,12 @@ def show_info(pack_name: str) -> None:
 
     if pack_name in installed:
         inst = installed[pack_name]
-        print(f"\nInstalled:   Yes")
+        print("\nInstalled:   Yes")
         print(f"  Version:   {inst.get('version', 'unknown')}")
         print(f"  Themes:    {inst.get('theme_count', 'unknown')}")
         print(f"  Location:  {get_user_themes_dir() / info['resolution'].replace('x', '')}")
     else:
-        print(f"\nInstalled:   No")
+        print("\nInstalled:   No")
 
     print(f"\nDownload URL: {info['url']}")
 
@@ -223,7 +223,7 @@ def verify_checksum(filepath: Path, expected_sha256: Optional[str]) -> bool:
 
     actual = sha256.hexdigest()
     if actual != expected_sha256:
-        print(f"Checksum mismatch!")
+        print("Checksum mismatch!")
         print(f"  Expected: {expected_sha256}")
         print(f"  Got:      {actual}")
         return False
@@ -369,7 +369,7 @@ def download_pack(pack_name: str, force: bool = False) -> int:
             json.dump(meta, f, indent=2)
 
     print(f"\n[OK] Installed {theme_count} themes to {dest_dir}")
-    print(f"Themes are now available in TRCC GUI")
+    print("Themes are now available in TRCC GUI")
     return 0
 
 
@@ -444,16 +444,16 @@ def create_local_pack(source_dir: str, pack_name: str, resolution: str) -> int:
     print(f"  Size:    {size_mb:.1f}MB")
     print(f"  SHA256:  {sha256.hexdigest()}")
     print(f"  Themes:  {theme_count}")
-    print(f"\nRegistry entry:")
+    print("\nRegistry entry:")
     print(f'    "{pack_name}": {{')
     print(f'        "name": "TRCC Themes {resolution}",')
-    print(f'        "version": "1.0.0",')
+    print('        "version": "1.0.0",')
     print(f'        "resolution": "{resolution}",')
     print(f'        "description": "{theme_count} themes for {resolution} LCD displays",')
     print(f'        "size_mb": {int(size_mb + 0.5)},')
     print(f'        "url": "https://github.com/thermalright/trcc-linux/releases/download/themes-v1.0.0/{archive_name}",')
     print(f'        "sha256": "{sha256.hexdigest()}",')
-    print(f'    }},')
+    print('    },')
 
     return 0
 

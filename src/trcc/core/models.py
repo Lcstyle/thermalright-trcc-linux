@@ -5,10 +5,9 @@ These models can be used by any GUI framework (Tkinter, PyQt6, etc.)
 """
 
 from dataclasses import dataclass, field
-from pathlib import Path
-from typing import Optional, List, Dict, Tuple, Callable, Any
 from enum import Enum, auto
-
+from pathlib import Path
+from typing import Any, Callable, Dict, List, Optional, Tuple
 
 # =============================================================================
 # Theme Model
@@ -427,7 +426,7 @@ class VideoModel:
         self.frames.clear()
 
         try:
-            from ..gif_animator import VideoPlayer, ThemeZtPlayer
+            from ..gif_animator import ThemeZtPlayer, VideoPlayer
 
             suffix = path.suffix.lower()
 
@@ -676,7 +675,7 @@ class OverlayModel:
             True if loaded successfully
         """
         try:
-            from ..dc_parser import parse_dc_file, dc_to_overlay_config
+            from ..dc_parser import dc_to_overlay_config, parse_dc_file
 
             dc_data = parse_dc_file(str(dc_path))
             config = dc_to_overlay_config(dc_data)

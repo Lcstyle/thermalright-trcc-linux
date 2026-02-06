@@ -44,11 +44,11 @@ Export Format (.tr files):
     Followed by embedded binary data for images
 """
 
-import struct
 import os
+import struct
 from dataclasses import dataclass, field
-from typing import List, Optional, Tuple
 from pathlib import Path
+from typing import List, Optional, Tuple
 
 # Import shared DisplayElement from parser (DRY)
 from trcc.dc_parser import DisplayElement
@@ -442,7 +442,7 @@ def export_theme(theme_path: str, export_path: str) -> None:
         theme_path: Source theme directory
         export_path: Destination .tr file path
     """
-    from .dc_parser import parse_dc_file, DisplayElement as ParsedElement
+    from .dc_parser import parse_dc_file
 
     config_file = os.path.join(theme_path, "config1.dc")
 

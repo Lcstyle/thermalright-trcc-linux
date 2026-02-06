@@ -15,13 +15,11 @@ import subprocess
 import threading
 from pathlib import Path
 
-from PyQt6.QtWidgets import QPushButton
-from PyQt6.QtCore import pyqtSignal, QSize
-from PyQt6.QtGui import QIcon, QMovie
+from PyQt6.QtCore import QSize, pyqtSignal
+from PyQt6.QtGui import QMovie
 
 from .base import BaseThemeBrowser, BaseThumbnail, pil_to_pixmap
-from .assets import load_pixmap
-from .constants import Sizes, Layout, Styles, Colors
+from .constants import Colors, Layout, Sizes, Styles
 
 try:
     from PIL import Image, ImageDraw

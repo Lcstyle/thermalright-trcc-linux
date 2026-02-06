@@ -19,8 +19,8 @@ When deps are missing, PIPEWIRE_AVAILABLE=False and the module is a no-op.
 The screencast timer in qt_app_mvc.py falls back to grab_screen_region().
 """
 
-import threading
 import logging
+import threading
 
 logger = logging.getLogger(__name__)
 
@@ -30,11 +30,11 @@ _IMPORT_ERROR = ""
 
 try:
     import dbus
-    from dbus.mainloop.glib import DBusGMainLoop
     import gi
+    from dbus.mainloop.glib import DBusGMainLoop
     gi.require_version('Gst', '1.0')
     gi.require_version('GstApp', '1.0')
-    from gi.repository import Gst, GstApp, GLib
+    from gi.repository import GLib, Gst, GstApp
     Gst.init(None)
     PIPEWIRE_AVAILABLE = True
 except (ImportError, ValueError) as e:

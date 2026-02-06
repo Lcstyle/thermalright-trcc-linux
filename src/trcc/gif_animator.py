@@ -5,12 +5,12 @@ GIF and Video Animation Support for TRCC Linux
 Handles GIF theme playback and video frame extraction using OpenCV.
 """
 
-from PIL import Image
-import time
 import os
+import shutil
 import subprocess
 import tempfile
-import shutil
+
+from PIL import Image
 
 # Try to import OpenCV
 try:
@@ -26,7 +26,7 @@ except ImportError:
 def _check_ffmpeg():
     """Check if ffmpeg is available in PATH"""
     try:
-        result = subprocess.run(['ffmpeg', '-version'], 
+        result = subprocess.run(['ffmpeg', '-version'],
                               capture_output=True, timeout=5)
         return result.returncode == 0
     except:
@@ -316,7 +316,7 @@ class VideoPlayer:
         Extracts frames to BMP files, then loads them.
         """
         print(f"[*] Loading video with FFmpeg: {self.video_path}")
-        
+
         # Get video info with ffprobe
         try:
             probe_cmd = [
@@ -348,10 +348,10 @@ class VideoPlayer:
             self.fps = 30
             self.width = self.target_size[0]
             self.height = self.target_size[1]
-        
+
         # Create temp directory for BMP frames (matching Windows TRCC)
         self._temp_dir = tempfile.mkdtemp(prefix='trcc_video_')
-        
+
         # Extract frames with FFmpeg (matching Windows command)
         # Windows: ffmpeg -i "{VIDEO}" -y -r 16 -s {W}x{H} -f image2 "{OUTPUT}%04d.bmp"
         # originalImageHz = 16 in UCBoFangQiKongZhi.cs
@@ -409,10 +409,10 @@ class VideoPlayer:
     def _preload_frames_ffmpeg(self):
         """Load extracted BMP frames from temp directory"""
         self.frames = []
-        
+
         # Get sorted list of BMP files
         bmp_files = sorted([f for f in os.listdir(self._temp_dir) if f.endswith('.bmp')])
-        
+
         print(f"[*] Loading {len(bmp_files)} BMP frames...")
         for bmp_file in bmp_files:
             bmp_path = os.path.join(self._temp_dir, bmp_file)
@@ -423,7 +423,7 @@ class VideoPlayer:
                 self.frames.append(frame)
             except Exception as e:
                 print(f"[!] Failed to load {bmp_file}: {e}")
-        
+
         self.frame_count = len(self.frames)
         print(f"[+] Loaded {self.frame_count} frames")
 
@@ -549,7 +549,7 @@ class VideoPlayer:
             self.cap.release()
             self.cap = None
         self.frames = []
-        
+
         # Clean up FFmpeg temp directory
         if self._temp_dir and os.path.exists(self._temp_dir):
             try:
@@ -626,14 +626,14 @@ class VideoPlayer:
                 print(f"  [{i+1}/{frame_count}] frames extracted")
 
         cap.release()
-        
+
         # Save metadata
         meta_path = os.path.join(output_dir, "video_info.txt")
         with open(meta_path, 'w') as f:
             f.write(f"frames={extracted}\n")
             f.write(f"fps={fps}\n")
             f.write(f"size={target_size[0]}x{target_size[1]}\n")
-        
+
         print(f"[+] Extracted {extracted} frames to {output_dir}")
         return extracted
 
@@ -644,7 +644,7 @@ class VideoPlayer:
         Command: ffmpeg -i "{VIDEO}" -y -s {W}x{H} -f image2 "{OUTPUT}%04d.png"
         """
         w, h = target_size
-        
+
         # Build FFmpeg command
         cmd = [
             'ffmpeg',
@@ -652,19 +652,19 @@ class VideoPlayer:
             '-y',  # Overwrite
             '-vf', f'scale={w}:{h}',
         ]
-        
+
         # Add frame limit if specified
         if max_frames:
             cmd.extend(['-vframes', str(max_frames)])
-        
+
         cmd.extend([
             '-f', 'image2',
             os.path.join(output_dir, 'frame_%04d.png')
         ])
-        
-        print(f"[*] Extracting frames with FFmpeg...")
+
+        print("[*] Extracting frames with FFmpeg...")
         print(f"    Command: {' '.join(cmd)}")
-        
+
         try:
             result = subprocess.run(cmd, capture_output=True, timeout=600)
             if result.returncode != 0:
@@ -676,7 +676,7 @@ class VideoPlayer:
         except Exception as e:
             print(f"[!] FFmpeg failed: {e}")
             return 0
-        
+
         # Count extracted frames
         extracted = len([f for f in os.listdir(output_dir) if f.startswith('frame_') and f.endswith('.png')])
         print(f"[+] Extracted {extracted} frames")
@@ -704,8 +704,8 @@ class ThemeZtPlayer:
             zt_path: Path to Theme.zt file
             target_size: Optional (width, height) to resize frames
         """
-        import struct
         import io
+        import struct
 
         self.zt_path = zt_path
         self.target_size = target_size
@@ -869,7 +869,7 @@ def test_video_player():
         print(f"[+] Delay per frame: {player.get_delay()}ms")
         player.close()
 
-    print(f"\n[✓] Test complete!")
+    print("\n[✓] Test complete!")
 
 
 if __name__ == '__main__':

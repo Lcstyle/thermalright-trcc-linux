@@ -36,10 +36,10 @@ Matches Windows TRCC buttonDaoChu_Click (export) and buttonDaoRu_Click (import).
         Theme.zt data (frame_count, timestamps, frames)
 """
 
-import struct
 import io
+import struct
 from pathlib import Path
-from typing import List, Dict, Any, Tuple, Optional
+from typing import Any, Dict, List, Optional, Tuple
 
 try:
     from PIL import Image

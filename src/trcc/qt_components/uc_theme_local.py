@@ -14,13 +14,13 @@ Features:
 import shutil
 from pathlib import Path
 
-from PyQt6.QtWidgets import QPushButton, QLineEdit, QLabel
 from PyQt6.QtCore import Qt, pyqtSignal
 from PyQt6.QtGui import QIcon
+from PyQt6.QtWidgets import QLabel, QLineEdit, QPushButton
 
-from .base import BaseThemeBrowser, BaseThumbnail
 from .assets import load_pixmap
-from .constants import Sizes, Layout, Styles
+from .base import BaseThemeBrowser, BaseThumbnail
+from .constants import Layout, Styles
 
 
 class ThemeThumbnail(BaseThumbnail):

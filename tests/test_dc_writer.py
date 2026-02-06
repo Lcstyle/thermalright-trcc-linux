@@ -6,7 +6,6 @@ import os
 import struct
 import tempfile
 import unittest
-from pathlib import Path
 
 from trcc.dc_parser import DisplayElement, parse_dc_file
 from trcc.dc_writer import (
@@ -15,12 +14,12 @@ from trcc.dc_writer import (
     _hex_to_argb,
     _metric_to_hardware_ids,
     _write_string,
+    import_theme,
     overlay_config_to_theme,
     read_carousel_config,
     write_carousel_config,
     write_dc_file,
     write_tr_export,
-    import_theme,
 )
 
 

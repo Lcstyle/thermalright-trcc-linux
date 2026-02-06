@@ -5,7 +5,6 @@ import os
 import struct
 import tempfile
 import unittest
-from pathlib import Path
 
 from PIL import Image
 

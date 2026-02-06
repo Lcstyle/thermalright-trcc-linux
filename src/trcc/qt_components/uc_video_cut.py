@@ -8,18 +8,22 @@ and Theme.zt export.
 
 import os
 import struct
-import tempfile
 import subprocess
-import time
-from pathlib import Path
+import tempfile
 
-from PyQt6.QtWidgets import QWidget, QPushButton, QLabel, QProgressBar
-from PyQt6.QtCore import Qt, QTimer, pyqtSignal, QThread, QSize
+from PyQt6.QtCore import QSize, Qt, QThread, QTimer, pyqtSignal
 from PyQt6.QtGui import (
-    QPainter, QColor, QPen, QBrush, QPixmap, QPalette, QIcon,
+    QBrush,
+    QColor,
+    QIcon,
+    QPainter,
+    QPalette,
+    QPen,
+    QPixmap,
 )
+from PyQt6.QtWidgets import QLabel, QProgressBar, QPushButton, QWidget
 
-from .assets import load_pixmap, asset_exists
+from .assets import load_pixmap
 from .constants import Styles
 
 # Try OpenCV for preview

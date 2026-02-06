@@ -4,9 +4,9 @@ import struct
 import unittest
 
 from trcc.device_implementations import (
+    IMPLEMENTATIONS,
     AliCorpLCDV1,
     GenericLCD,
-    IMPLEMENTATIONS,
     LCDDeviceImplementation,
     ThermalrightLCDV1,
     get_implementation,

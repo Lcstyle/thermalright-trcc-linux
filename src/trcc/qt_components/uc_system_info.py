@@ -13,18 +13,20 @@ Matches Windows TRCC UCSystemInfoOptions:
 - Config persistence via sysinfo_config.json
 """
 
-from PyQt6.QtWidgets import QWidget, QLabel, QPushButton, QLineEdit
-from PyQt6.QtCore import Qt, QTimer, pyqtSignal, QSize
-from PyQt6.QtGui import QPalette, QBrush, QColor, QFont, QPainter, QIcon
-
-from .assets import load_pixmap
-from .constants import Colors
+from PyQt6.QtCore import QSize, Qt, QTimer, pyqtSignal
+from PyQt6.QtGui import QBrush, QColor, QFont, QIcon, QPainter, QPalette
+from PyQt6.QtWidgets import QLabel, QLineEdit, QPushButton, QWidget
 
 from ..sensor_enumerator import SensorEnumerator
 from ..sysinfo_config import (
-    SysInfoConfig, PanelConfig, SensorBinding,
-    CATEGORY_IMAGES, CATEGORY_COLORS,
+    CATEGORY_COLORS,
+    CATEGORY_IMAGES,
+    PanelConfig,
+    SensorBinding,
+    SysInfoConfig,
 )
+from .assets import load_pixmap
+from .constants import Colors
 
 # Grid layout (from Windows UCSystemInfoOptions.cs)
 PANEL_W = 266
@@ -435,8 +437,9 @@ class UCSystemInfo(QWidget):
 
     def _on_selector_clicked(self, panel: SystemInfoPanel, row: int):
         """Open sensor picker for a specific row."""
-        from .uc_sensor_picker import SensorPickerDialog
         from PyQt6.QtWidgets import QDialog
+
+        from .uc_sensor_picker import SensorPickerDialog
 
         current_id = ''
         if row < len(panel.config.sensors):

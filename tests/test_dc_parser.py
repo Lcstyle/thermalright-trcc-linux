@@ -12,11 +12,10 @@ Tests cover:
 - validate_theme() and validate_all_themes()
 """
 
-import unittest
+import os
 import struct
 import sys
-import os
-from unittest.mock import patch, mock_open, MagicMock
+import unittest
 from io import BytesIO
 from tempfile import TemporaryDirectory
 
@@ -24,17 +23,17 @@ from tempfile import TemporaryDirectory
 sys.path.insert(0, os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), 'src'))
 
 from trcc.dc_parser import (
-    FontConfig,
-    ElementConfig,
     DisplayElement,
-    parse_dc_file,
-    parse_dd_format,
-    parse_display_elements,
+    ElementConfig,
+    FontConfig,
     dc_to_overlay_config,
     get_hardware_metric_name,
     list_theme_configs,
-    validate_theme,
+    parse_dc_file,
+    parse_dd_format,
+    parse_display_elements,
     validate_all_themes,
+    validate_theme,
 )
 
 

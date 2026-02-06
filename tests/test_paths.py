@@ -10,7 +10,10 @@ from pathlib import Path
 from unittest.mock import patch
 
 from trcc.paths import (
+    _has_actual_themes,
+    build_search_paths,
     device_config_key,
+    find_resource,
     get_device_config,
     get_saved_resolution,
     get_saved_temp_unit,
@@ -22,9 +25,6 @@ from trcc.paths import (
     save_device_setting,
     save_resolution,
     save_temp_unit,
-    find_resource,
-    build_search_paths,
-    _has_actual_themes,
 )
 
 

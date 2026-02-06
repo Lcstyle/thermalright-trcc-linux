@@ -5,13 +5,13 @@ Matches Windows TRCC.UCDevice (180x800)
 Shows connected LCD devices as clickable buttons.
 """
 
-from PyQt6.QtWidgets import QWidget, QLabel, QPushButton
 from PyQt6.QtCore import Qt, pyqtSignal
 from PyQt6.QtGui import QIcon
+from PyQt6.QtWidgets import QLabel, QPushButton, QWidget
 
+from .assets import Assets, asset_exists, load_pixmap
 from .base import BasePanel, create_image_button, set_background_pixmap
-from .assets import load_pixmap, asset_exists, Assets
-from .constants import Colors, Sizes, Layout, Styles
+from .constants import Colors, Layout, Sizes, Styles
 
 # Import device detection
 try:

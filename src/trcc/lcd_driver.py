@@ -4,19 +4,19 @@ Unified LCD Driver
 Combines device detection with implementation-specific protocols.
 """
 
+import binascii
+import os
+import struct
 import subprocess
 import tempfile
-import os
-import binascii
-import struct
 from typing import Optional
 
 try:
-    from .device_detector import detect_devices, DetectedDevice, get_default_device
-    from .device_implementations import get_implementation, LCDDeviceImplementation
+    from .device_detector import DetectedDevice, detect_devices, get_default_device
+    from .device_implementations import LCDDeviceImplementation, get_implementation
 except ImportError:
-    from device_detector import detect_devices, DetectedDevice, get_default_device
-    from device_implementations import get_implementation, LCDDeviceImplementation
+    from device_detector import DetectedDevice, detect_devices, get_default_device
+    from device_implementations import LCDDeviceImplementation, get_implementation
 
 
 class LCDDriver:

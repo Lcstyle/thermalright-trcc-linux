@@ -10,19 +10,29 @@ Controllers are GUI-framework independent. They:
 import shutil
 import tempfile
 import threading
-import time
 from pathlib import Path
-from typing import Optional, Callable, Any, Dict, Tuple, List
+from typing import Any, Callable, Dict, List, Optional, Tuple
 
-from .models import (
-    ThemeInfo, ThemeModel, ThemeType,
-    DeviceInfo, DeviceModel,
-    VideoState, VideoModel, PlaybackState,
-    OverlayElement, OverlayModel,
-)
 from ..paths import (
-    get_saved_resolution, save_resolution, get_web_dir, get_web_masks_dir,
-    ensure_themes_extracted, ensure_web_extracted, ensure_web_masks_extracted,
+    ensure_themes_extracted,
+    ensure_web_extracted,
+    ensure_web_masks_extracted,
+    get_saved_resolution,
+    get_web_dir,
+    get_web_masks_dir,
+    save_resolution,
+)
+from .models import (
+    DeviceInfo,
+    DeviceModel,
+    OverlayElement,
+    OverlayModel,
+    PlaybackState,
+    ThemeInfo,
+    ThemeModel,
+    ThemeType,
+    VideoModel,
+    VideoState,
 )
 
 
@@ -1011,7 +1021,7 @@ class FormCZTVController:
         if not dc_path or not dc_path.exists():
             return
         try:
-            from ..dc_parser import parse_dc_file, dc_to_overlay_config
+            from ..dc_parser import dc_to_overlay_config, parse_dc_file
             dc_data = parse_dc_file(str(dc_path))
             overlay_config = dc_to_overlay_config(dc_data)
             self.overlay.set_config(overlay_config)

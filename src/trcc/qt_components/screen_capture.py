@@ -15,9 +15,9 @@ import subprocess
 import tempfile
 from functools import lru_cache
 
-from PyQt6.QtWidgets import QWidget, QApplication
-from PyQt6.QtCore import Qt, QRect, QPoint, pyqtSignal
-from PyQt6.QtGui import QPainter, QColor, QPen, QPixmap, QFont, QCursor
+from PyQt6.QtCore import QPoint, QRect, Qt, pyqtSignal
+from PyQt6.QtGui import QColor, QFont, QPainter, QPen, QPixmap
+from PyQt6.QtWidgets import QApplication, QWidget
 
 
 @lru_cache(maxsize=1)
@@ -273,7 +273,6 @@ class ScreenCaptureOverlay(QWidget):
         try:
             cropped = self._screenshot.copy(rect)
             # Convert QPixmap → PIL Image
-            from PIL import Image as PILImage
             from .base import pixmap_to_pil
             pil_img = pixmap_to_pil(cropped)
             self.captured.emit(pil_img)

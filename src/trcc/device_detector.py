@@ -8,11 +8,11 @@ Supported devices:
 - ALi Corp:     VID=0x0416 (1046),  PID=0x5406 (21510)
 """
 
-import subprocess
-import re
 import os
-from typing import Optional, Dict, List, Tuple
+import re
+import subprocess
 from dataclasses import dataclass
+from typing import List, Optional
 
 
 @dataclass
@@ -284,19 +284,19 @@ def usb_reset_device(usb_path: str) -> bool:
     """Soft reset USB device by unbinding/rebinding (simulates unplug/replug)"""
     try:
         import time
-        
+
         # Find the device's bus and port
         busnum_path = f"/sys/bus/usb/devices/{usb_path}/busnum"
         devnum_path = f"/sys/bus/usb/devices/{usb_path}/devnum"
-        
+
         if not os.path.exists(busnum_path):
             return False
-        
+
         with open(busnum_path) as f:
             bus = f.read().strip()
         with open(devnum_path) as f:
             dev = f.read().strip()
-        
+
         # Use usbreset or authorized mechanism
         # Method 1: Try authorized=0/1 (safest)
         auth_path = f"/sys/bus/usb/devices/{usb_path}/authorized"
@@ -311,15 +311,15 @@ def usb_reset_device(usb_path: str) -> bool:
                 print(f"[✓] USB device {usb_path} reset successfully")
                 return True
             except PermissionError:
-                print(f"[!] Permission denied for USB reset (need root)")
-        
+                print("[!] Permission denied for USB reset (need root)")
+
         # Method 2: Try unbind/bind (requires root)
         driver_path = f"/sys/bus/usb/devices/{usb_path}/driver"
         if os.path.exists(driver_path):
             try:
                 unbind_path = os.path.join(os.readlink(driver_path), 'unbind')
                 bind_path = os.path.join(os.readlink(driver_path), 'bind')
-                
+
                 with open(unbind_path, 'w') as f:
                     f.write(usb_path)
                 time.sleep(0.5)
@@ -330,7 +330,7 @@ def usb_reset_device(usb_path: str) -> bool:
                 return True
             except Exception as e:
                 print(f"[!] Failed to reset via unbind/bind: {e}")
-        
+
         return False
     except Exception as e:
         print(f"[!] USB reset failed: {e}")
@@ -341,7 +341,7 @@ def check_device_health(device_path: str) -> bool:
     """Check if device is responding properly (not in bad binary mode)"""
     try:
         import subprocess
-        
+
         # Try a simple inquiry command
         result = subprocess.run(
             ['sg_inq', device_path],
@@ -349,20 +349,20 @@ def check_device_health(device_path: str) -> bool:
             text=True,
             timeout=3
         )
-        
+
         # Check for error indicators
         if result.returncode != 0:
             return False
-        
+
         # Check for bad state indicators in output
         output_lower = result.stdout.lower() + result.stderr.lower()
-        bad_states = ['error', 'failed', 'not ready', 'medium not present', 
+        bad_states = ['error', 'failed', 'not ready', 'medium not present',
                      'i/o error', 'device not responding']
-        
+
         for state in bad_states:
             if state in output_lower:
                 return False
-        
+
         return True
     except (subprocess.TimeoutExpired, FileNotFoundError, Exception):
         return False

@@ -5,12 +5,11 @@ Loads background images and icons from assets/gui/ directory.
 Images are extracted from Windows TRCC resources using tools/extract_resx_images.py
 """
 
-from pathlib import Path
 from functools import lru_cache
+from pathlib import Path
 
-from PyQt6.QtGui import QPixmap, QImage
 from PyQt6.QtCore import Qt
-
+from PyQt6.QtGui import QPixmap
 
 # Asset directory (relative to this file)
 ASSETS_DIR = Path(__file__).parent.parent.parent / 'assets' / 'gui'

@@ -6,8 +6,8 @@ Entry points for the trcc-linux package.
 """
 
 import argparse
-import sys
 import os
+import sys
 
 
 def _ensure_extracted(driver):
@@ -16,7 +16,8 @@ def _ensure_extracted(driver):
         if driver.implementation:
             w, h = driver.implementation.resolution
             from trcc.paths import (
-                ensure_themes_extracted, ensure_web_extracted,
+                ensure_themes_extracted,
+                ensure_web_extracted,
                 ensure_web_masks_extracted,
             )
             ensure_themes_extracted(w, h)
@@ -44,7 +45,7 @@ Examples:
     trcc info             Show system metrics
         """
     )
-    
+
     parser.add_argument(
         "--version",
         action="version",
@@ -58,7 +59,7 @@ Examples:
     )
 
     subparsers = parser.add_subparsers(dest="command", help="Available commands")
-    
+
     # GUI command
     gui_parser = subparsers.add_parser("gui", help="Launch graphical interface")
     gui_parser.add_argument(
@@ -70,26 +71,26 @@ Examples:
     # Detect command
     detect_parser = subparsers.add_parser("detect", help="Detect LCD device")
     detect_parser.add_argument("--all", "-a", action="store_true", help="Show all devices")
-    
+
     # Select command
     select_parser = subparsers.add_parser("select", help="Select device to control")
     select_parser.add_argument("number", type=int, help="Device number from 'trcc detect --all'")
-    
+
     # Test command
     test_parser = subparsers.add_parser("test", help="Test display with color cycle")
     test_parser.add_argument("--device", "-d", help="Device path (e.g., /dev/sg0)")
     test_parser.add_argument("--loop", "-l", action="store_true", help="Loop colors continuously")
-    
+
     # Send command
     send_parser = subparsers.add_parser("send", help="Send image to LCD")
     send_parser.add_argument("image", help="Image file to send")
     send_parser.add_argument("--device", "-d", help="Device path")
-    
+
     # Color command
     color_parser = subparsers.add_parser("color", help="Display solid color")
     color_parser.add_argument("hex", help="Hex color code (e.g., ff0000 for red)")
     color_parser.add_argument("--device", "-d", help="Device path")
-    
+
     # Info command
     info_parser = subparsers.add_parser("info", help="Show system metrics")
 
@@ -171,12 +172,12 @@ def detect(show_all=False):
     """Detect LCD device."""
     try:
         from trcc.device_detector import detect_devices
-        
+
         devices = detect_devices()
         if not devices:
             print("No compatible TRCC LCD device detected.")
             return 1
-        
+
         if show_all:
             selected = _get_selected_device()
             for i, dev in enumerate(devices, 1):
@@ -221,7 +222,7 @@ def _set_selected_device(device_path):
     settings_path = _get_settings_path()
     settings_dir = os.path.dirname(settings_path)
     os.makedirs(settings_dir, exist_ok=True)
-    
+
     settings = {}
     if os.path.exists(settings_path):
         try:
@@ -229,7 +230,7 @@ def _set_selected_device(device_path):
                 settings = json.load(f)
         except Exception:
             pass
-    
+
     settings["selected_device"] = device_path
     with open(settings_path, "w") as f:
         json.dump(settings, f, indent=2)
@@ -239,16 +240,16 @@ def select_device(number):
     """Select a device by number."""
     try:
         from trcc.device_detector import detect_devices
-        
+
         devices = detect_devices()
         if not devices:
             print("No devices found.")
             return 1
-        
+
         if number < 1 or number > len(devices):
             print(f"Invalid device number. Use 1-{len(devices)}")
             return 1
-        
+
         device = devices[number - 1]
         _set_selected_device(device.scsi_device)
         print(f"Selected: {device.scsi_device} ({device.product_name})")
@@ -261,16 +262,16 @@ def select_device(number):
 def test_display(device=None, loop=False):
     """Test display with color cycle."""
     try:
-        from trcc.lcd_driver import LCDDriver
-        from PIL import Image
         import time
-        
+
+        from trcc.lcd_driver import LCDDriver
+
         if device is None:
             device = _get_selected_device()
-        
+
         driver = LCDDriver(device_path=device)
         _ensure_extracted(driver)
-        
+
         colors = [
             ((255, 0, 0), "Red"),
             ((0, 255, 0), "Green"),
@@ -280,19 +281,19 @@ def test_display(device=None, loop=False):
             ((0, 255, 255), "Cyan"),
             ((255, 255, 255), "White"),
         ]
-        
+
         print(f"Testing display on {driver.device_path}...")
-        
+
         while True:
             for color, name in colors:
                 print(f"  Displaying: {name}")
                 frame = driver.create_solid_color(*color)
                 driver.send_frame(frame)
                 time.sleep(1)
-            
+
             if not loop:
                 break
-        
+
         print("Test complete!")
         return 0
     except KeyboardInterrupt:
@@ -307,14 +308,14 @@ def send_image(image_path, device=None):
     """Send image to LCD."""
     try:
         from trcc.lcd_driver import LCDDriver
-        
+
         if not os.path.exists(image_path):
             print(f"Error: File not found: {image_path}")
             return 1
-        
+
         if device is None:
             device = _get_selected_device()
-        
+
         driver = LCDDriver(device_path=device)
         _ensure_extracted(driver)
         frame = driver.load_image(image_path)
@@ -330,20 +331,20 @@ def send_color(hex_color, device=None):
     """Send solid color to LCD."""
     try:
         from trcc.lcd_driver import LCDDriver
-        
+
         # Parse hex color
         hex_color = hex_color.lstrip('#')
         if len(hex_color) != 6:
             print("Error: Invalid hex color. Use format: ff0000")
             return 1
-        
+
         r = int(hex_color[0:2], 16)
         g = int(hex_color[2:4], 16)
         b = int(hex_color[4:6], 16)
-        
+
         if device is None:
             device = _get_selected_device()
-        
+
         driver = LCDDriver(device_path=device)
         _ensure_extracted(driver)
         frame = driver.create_solid_color(r, g, b)
@@ -363,7 +364,7 @@ def reset_device(device=None):
         if device is None:
             device = _get_selected_device()
 
-        print(f"Resetting LCD device...")
+        print("Resetting LCD device...")
         driver = LCDDriver(device_path=device)
         _ensure_extracted(driver)
         print(f"  Device: {driver.device_path}")
@@ -371,7 +372,7 @@ def reset_device(device=None):
         # Send test frame (red) - this will auto-init if needed
         frame = driver.create_solid_color(255, 0, 0)
         driver.send_frame(frame, force_init=True)
-        print(f"[✓] Device reset - displaying RED")
+        print("[✓] Device reset - displaying RED")
         return 0
     except Exception as e:
         print(f"Error resetting device: {e}")
@@ -381,37 +382,37 @@ def reset_device(device=None):
 def show_info():
     """Show system metrics."""
     try:
-        from trcc.system_info import get_all_metrics, format_metric
-        
+        from trcc.system_info import format_metric, get_all_metrics
+
         metrics = get_all_metrics()
-        
+
         print("System Information")
         print("=" * 40)
-        
+
         # CPU
         print("\nCPU:")
         for key in ['cpu_temp', 'cpu_percent', 'cpu_freq']:
             if key in metrics:
                 print(f"  {key}: {format_metric(key, metrics[key])}")
-        
+
         # GPU
         print("\nGPU:")
         for key in ['gpu_temp', 'gpu_usage', 'gpu_clock']:
             if key in metrics:
                 print(f"  {key}: {format_metric(key, metrics[key])}")
-        
+
         # Memory
         print("\nMemory:")
         for key in ['mem_percent', 'mem_used', 'mem_total']:
             if key in metrics:
                 print(f"  {key}: {format_metric(key, metrics[key])}")
-        
+
         # Date/Time
         print("\nDate/Time:")
         for key in ['date', 'time', 'weekday']:
             if key in metrics:
                 print(f"  {key}: {format_metric(key, metrics[key])}")
-        
+
         return 0
     except Exception as e:
         print(f"Error getting metrics: {e}")
@@ -506,7 +507,8 @@ def setup_udev(dry_run=False):
 def download_themes(pack=None, show_list=False, force=False, show_info=False):
     """Download theme packs (like spacy download)."""
     try:
-        from trcc.theme_downloader import list_available, show_info as pack_info, download_pack
+        from trcc.theme_downloader import download_pack, list_available
+        from trcc.theme_downloader import show_info as pack_info
 
         if show_list or pack is None:
             list_available()

@@ -5,16 +5,13 @@ Matches Windows TRCC.DCUserControl.UCScreenImageBK (500x500)
 Contains the LCD preview with decorative frame.
 """
 
-from PyQt6.QtWidgets import (
-    QWidget, QVBoxLayout, QLabel, QPushButton,
-    QFrame, QSlider
-)
 from PyQt6.QtCore import Qt, pyqtSignal
-from PyQt6.QtGui import QPixmap, QIcon
+from PyQt6.QtGui import QIcon
+from PyQt6.QtWidgets import QFrame, QLabel, QPushButton, QSlider, QVBoxLayout
 
-from .base import BasePanel, ImageLabel, pil_to_pixmap, set_background_pixmap
-from .assets import load_pixmap, Assets
-from .constants import Colors, Sizes, Layout, Styles
+from .assets import Assets, load_pixmap
+from .base import BasePanel, ImageLabel, set_background_pixmap
+from .constants import Colors, Layout, Sizes, Styles
 
 try:
     from PIL import Image

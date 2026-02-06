@@ -33,12 +33,11 @@ Usage:
     results = downloader.download_category("a", max_themes=20)
 """
 
-import os
 import threading
 from pathlib import Path
-from urllib.request import urlopen, Request
-from urllib.error import URLError, HTTPError
-from typing import Optional, List, Tuple, Callable, Dict
+from typing import Callable, Dict, List, Optional
+from urllib.error import HTTPError, URLError
+from urllib.request import Request, urlopen
 
 # Category definitions matching Windows FormCZTV.CheakWebFile
 # (prefix, display_name, count)

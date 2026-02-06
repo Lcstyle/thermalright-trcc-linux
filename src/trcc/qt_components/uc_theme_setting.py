@@ -15,18 +15,25 @@ Windows layout (from UCThemeSetting.resx):
 - ucShiPingBoFangQi1:    (371, 551) 351x100 - Video player toggle
 """
 
-from PyQt6.QtWidgets import (
-    QWidget, QVBoxLayout, QLabel, QPushButton,
-    QFrame, QComboBox, QLineEdit, QSpinBox,
-    QStackedWidget, QColorDialog, QMenu
-)
 from PyQt6.QtCore import Qt, pyqtSignal
-from PyQt6.QtGui import QColor, QFont, QPalette, QPainter, QPixmap, QIcon
+from PyQt6.QtGui import QColor, QFont, QIcon, QPainter, QPalette
+from PyQt6.QtWidgets import (
+    QColorDialog,
+    QComboBox,
+    QFrame,
+    QLabel,
+    QLineEdit,
+    QMenu,
+    QPushButton,
+    QSpinBox,
+    QStackedWidget,
+    QVBoxLayout,
+    QWidget,
+)
 
+from .assets import load_pixmap
 from .base import BasePanel, set_background_pixmap
-from .assets import load_pixmap, asset_exists
-from .constants import Colors, Sizes, Layout, Styles
-
+from .constants import Colors, Layout, Sizes, Styles
 
 # ============================================================================
 # Overlay element constants (matching Tkinter UCXiTongXianShiSub)
