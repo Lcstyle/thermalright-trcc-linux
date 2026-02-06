@@ -31,7 +31,7 @@ Semantic versioning: MAJOR.MINOR.PATCH
 
 ## Test Suite
 
-423 tests across 15 test files — `pytest tests/`
+527 tests across 18 test files — `pytest tests/`
 
 | Test file | Module covered | Tests |
 |-----------|---------------|-------|
@@ -50,8 +50,11 @@ Semantic versioning: MAJOR.MINOR.PATCH
 | test_sensor_enumerator | sensor_enumerator | 20 |
 | test_lcd_driver | lcd_driver | 15 |
 | test_cloud_downloader | cloud_downloader | 27 |
+| test_theme_downloader | theme_downloader | 30 |
+| test_cli | cli | 26 |
+| test_controllers | core/controllers | 43 |
 
-**Not tested** (GUI/heavy I/O): qt_components/*, cli, theme_downloader, core/controllers
+**Not tested** (GUI/heavy I/O): qt_components/*
 
 ## Commands
 
@@ -286,10 +289,10 @@ Categories by filename prefix: a=Gallery, b=Tech, c=HUD, d=Light, e=Nature, y=Ae
 
 Prioritized list of remaining work:
 
-### 1. More Test Coverage
-- **test_theme_downloader.py** — theme pack download manager (last untested non-GUI module)
-- **test_cli.py** — CLI arg parsing and subcommand dispatch (mock heavy I/O)
-- **test_controllers.py** — core/controllers.py MVC logic (GUI-independent, testable)
+### 1. ~~More Test Coverage~~ ✓ Done
+- ~~test_theme_downloader.py~~ — 30 tests (registry, download, checksum, extract, install, remove)
+- ~~test_cli.py~~ — 26 tests (arg parsing, dispatch, settings, color parsing, metrics)
+- ~~test_controllers.py~~ — 43 tests (Theme/Device/Video/Overlay/FormCZTV controllers)
 
 ### 2. Coverage Reporting
 - Add `pytest-cov` to CI workflow (`.github/workflows/tests.yml`)
