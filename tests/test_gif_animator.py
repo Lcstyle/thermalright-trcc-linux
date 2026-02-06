@@ -22,7 +22,8 @@ def _make_gif(frames=3, size=(4, 4), durations=None):
         img = Image.new('RGB', size, color=(i * 80, 0, 0))
         imgs.append(img)
 
-    path = tempfile.mktemp(suffix='.gif')
+    fd, path = tempfile.mkstemp(suffix='.gif')
+    os.close(fd)
     imgs[0].save(path, save_all=True, append_images=imgs[1:],
                  duration=durations, loop=0)
     return path
@@ -30,7 +31,8 @@ def _make_gif(frames=3, size=(4, 4), durations=None):
 
 def _make_theme_zt(frames=4, size=(8, 8), quality=50):
     """Create a minimal Theme.zt binary file. Returns path."""
-    path = tempfile.mktemp(suffix='.zt')
+    fd, path = tempfile.mkstemp(suffix='.zt')
+    os.close(fd)
 
     jpeg_blobs = []
     for i in range(frames):
@@ -235,7 +237,8 @@ class TestThemeZtPlayer(unittest.TestCase):
         self.assertEqual(self.player.get_delay(), 42)
 
     def test_invalid_magic_raises(self):
-        path = tempfile.mktemp(suffix='.zt')
+        fd, path = tempfile.mkstemp(suffix='.zt')
+        os.close(fd)
         with open(path, 'wb') as f:
             f.write(b'\x00\x00\x00\x00\x00')
         with self.assertRaises(ValueError):
