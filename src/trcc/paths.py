@@ -157,6 +157,25 @@ def ensure_themes_extracted(width: int, height: int) -> bool:
     return _extract_7z(archive, theme_dir)
 
 
+def ensure_web_extracted(width: int, height: int) -> bool:
+    """Extract cloud theme previews from .7z archive if not already present.
+
+    Looks for src/data/Web/{W}{H}.7z beside the web directory and extracts
+    it in-place when the directory is missing or empty.
+
+    Returns True if previews are available (already existed or freshly extracted).
+    """
+    web_dir = get_web_dir(width, height)
+    archive = web_dir + '.7z'
+
+    if os.path.isdir(web_dir) and os.listdir(web_dir):
+        return True
+    if not os.path.isfile(archive):
+        return False
+
+    return _extract_7z(archive, web_dir)
+
+
 def ensure_web_masks_extracted(width: int, height: int) -> bool:
     """Extract cloud mask themes from .7z archive if not already present.
 

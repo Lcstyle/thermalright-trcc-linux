@@ -15,8 +15,12 @@ def _ensure_extracted(driver):
     try:
         if driver.implementation:
             w, h = driver.implementation.resolution
-            from trcc.paths import ensure_themes_extracted, ensure_web_masks_extracted
+            from trcc.paths import (
+                ensure_themes_extracted, ensure_web_extracted,
+                ensure_web_masks_extracted,
+            )
             ensure_themes_extracted(w, h)
+            ensure_web_extracted(w, h)
             ensure_web_masks_extracted(w, h)
     except Exception:
         pass  # Non-fatal — themes are optional for CLI commands

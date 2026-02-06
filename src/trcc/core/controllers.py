@@ -22,7 +22,7 @@ from .models import (
 )
 from ..paths import (
     get_saved_resolution, save_resolution, get_web_dir, get_web_masks_dir,
-    ensure_themes_extracted, ensure_web_masks_extracted,
+    ensure_themes_extracted, ensure_web_extracted, ensure_web_masks_extracted,
 )
 
 
@@ -511,8 +511,9 @@ class FormCZTVController:
         self.video.set_target_size(self.lcd_width, self.lcd_height)
         self.overlay.set_target_size(self.lcd_width, self.lcd_height)
 
-        # Extract default themes and cloud masks from .7z archives if needed
+        # Extract all .7z archives for this resolution if needed
         ensure_themes_extracted(self.lcd_width, self.lcd_height)
+        ensure_web_extracted(self.lcd_width, self.lcd_height)
         ensure_web_masks_extracted(self.lcd_width, self.lcd_height)
 
         # Set theme directories
@@ -544,8 +545,9 @@ class FormCZTVController:
         if persist:
             save_resolution(width, height)
 
-        # Extract default themes and cloud masks from .7z archives if needed
+        # Extract all .7z archives for this resolution if needed
         ensure_themes_extracted(width, height)
+        ensure_web_extracted(width, height)
         ensure_web_masks_extracted(width, height)
 
         # Reload theme directories for new resolution
