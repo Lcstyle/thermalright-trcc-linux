@@ -103,43 +103,43 @@ Find your distro, copy the one-liner, paste in terminal. After it finishes: **un
 #### Fedora / Nobara
 
 ```bash
-sudo dnf install libusb1-devel python3-pyqt6 ffmpeg && git clone -b hid-protocol-testing https://github.com/Lexonight1/thermalright-trcc-linux.git && cd thermalright-trcc-linux && pip install --break-system-packages -e ".[hid]" && sudo trcc setup-udev
+sudo dnf install libusb1-devel python3-pyqt6 ffmpeg && git clone -b hid-protocol-testing https://github.com/Lexonight1/thermalright-trcc-linux.git && cd thermalright-trcc-linux && pip install --break-system-packages -e ".[hid]" && sudo PYTHONPATH=src python3 -m trcc.cli setup-udev
 ```
 
 #### Ubuntu / Debian / Mint / Pop!_OS / Zorin / elementary OS / Xubuntu
 
 ```bash
-sudo apt install libusb-1.0-0-dev python3-pyqt6 ffmpeg python3-pip && git clone -b hid-protocol-testing https://github.com/Lexonight1/thermalright-trcc-linux.git && cd thermalright-trcc-linux && pip install --break-system-packages -e ".[hid]" && sudo trcc setup-udev
+sudo apt install libusb-1.0-0-dev python3-pyqt6 ffmpeg python3-pip && git clone -b hid-protocol-testing https://github.com/Lexonight1/thermalright-trcc-linux.git && cd thermalright-trcc-linux && pip install --break-system-packages -e ".[hid]" && sudo PYTHONPATH=src python3 -m trcc.cli setup-udev
 ```
 
 #### Arch / Manjaro / EndeavourOS / CachyOS / Garuda
 
 ```bash
-sudo pacman -S libusb python-pyqt6 ffmpeg python-pip && git clone -b hid-protocol-testing https://github.com/Lexonight1/thermalright-trcc-linux.git && cd thermalright-trcc-linux && pip install --break-system-packages -e ".[hid]" && sudo trcc setup-udev
+sudo pacman -S libusb python-pyqt6 ffmpeg python-pip && git clone -b hid-protocol-testing https://github.com/Lexonight1/thermalright-trcc-linux.git && cd thermalright-trcc-linux && pip install --break-system-packages -e ".[hid]" && sudo PYTHONPATH=src python3 -m trcc.cli setup-udev
 ```
 
 #### openSUSE
 
 ```bash
-sudo zypper install libusb-1_0-devel python3-qt6 ffmpeg python3-pip && git clone -b hid-protocol-testing https://github.com/Lexonight1/thermalright-trcc-linux.git && cd thermalright-trcc-linux && pip install --break-system-packages -e ".[hid]" && sudo trcc setup-udev
+sudo zypper install libusb-1_0-devel python3-qt6 ffmpeg python3-pip && git clone -b hid-protocol-testing https://github.com/Lexonight1/thermalright-trcc-linux.git && cd thermalright-trcc-linux && pip install --break-system-packages -e ".[hid]" && sudo PYTHONPATH=src python3 -m trcc.cli setup-udev
 ```
 
 #### Void Linux
 
 ```bash
-sudo xbps-install libusb-devel python3-PyQt6 ffmpeg python3-pip && git clone -b hid-protocol-testing https://github.com/Lexonight1/thermalright-trcc-linux.git && cd thermalright-trcc-linux && pip install --break-system-packages -e ".[hid]" && sudo trcc setup-udev
+sudo xbps-install libusb-devel python3-PyQt6 ffmpeg python3-pip && git clone -b hid-protocol-testing https://github.com/Lexonight1/thermalright-trcc-linux.git && cd thermalright-trcc-linux && pip install --break-system-packages -e ".[hid]" && sudo PYTHONPATH=src python3 -m trcc.cli setup-udev
 ```
 
 #### Gentoo
 
 ```bash
-sudo emerge --ask dev-libs/libusb dev-python/PyQt6 media-video/ffmpeg dev-python/pip && git clone -b hid-protocol-testing https://github.com/Lexonight1/thermalright-trcc-linux.git && cd thermalright-trcc-linux && pip install --break-system-packages -e ".[hid]" && sudo trcc setup-udev
+sudo emerge --ask dev-libs/libusb dev-python/PyQt6 media-video/ffmpeg dev-python/pip && git clone -b hid-protocol-testing https://github.com/Lexonight1/thermalright-trcc-linux.git && cd thermalright-trcc-linux && pip install --break-system-packages -e ".[hid]" && sudo PYTHONPATH=src python3 -m trcc.cli setup-udev
 ```
 
 #### Alpine
 
 ```bash
-sudo apk add libusb-dev py3-pyqt6 ffmpeg py3-pip python3 && git clone -b hid-protocol-testing https://github.com/Lexonight1/thermalright-trcc-linux.git && cd thermalright-trcc-linux && pip install --break-system-packages -e ".[hid]" && sudo trcc setup-udev
+sudo apk add libusb-dev py3-pyqt6 ffmpeg py3-pip python3 && git clone -b hid-protocol-testing https://github.com/Lexonight1/thermalright-trcc-linux.git && cd thermalright-trcc-linux && pip install --break-system-packages -e ".[hid]" && sudo PYTHONPATH=src python3 -m trcc.cli setup-udev
 ```
 
 #### Bazzite / Fedora Atomic
@@ -585,7 +585,7 @@ sudo PYTHONPATH=src python3 -m trcc.cli setup-udev
 Or, if you installed with `pip install -e .`:
 
 ```bash
-sudo trcc setup-udev
+sudo PYTHONPATH=src python3 -m trcc.cli setup-udev
 ```
 
 **What this does:**
@@ -910,7 +910,7 @@ cd thermalright-trcc-linux
 pip install --break-system-packages -e .
 
 # Set up device permissions
-sudo trcc setup-udev
+sudo PYTHONPATH=src python3 -m trcc.cli setup-udev
 # Unplug/replug USB cable, or reboot
 
 # Re-enable read-only (optional, recommended)
@@ -1001,7 +1001,7 @@ pip install --break-system-packages -e .
 > **ChromeOS limitation:** USB device passthrough to the Linux container requires enabling it in ChromeOS settings. Go to Settings > Advanced > Developers > Linux > Manage USB devices, and enable your Thermalright LCD device. You may also need to run `trcc setup-udev` inside the container and replug the USB device.
 
 ```bash
-sudo trcc setup-udev
+sudo PYTHONPATH=src python3 -m trcc.cli setup-udev
 trcc gui
 ```
 
@@ -1022,7 +1022,7 @@ sudo dnf install python3-pip sg3_utils python3-pyqt6 ffmpeg
 git clone https://github.com/Lexonight1/thermalright-trcc-linux.git
 cd thermalright-trcc-linux
 pip install -e .
-sudo trcc setup-udev
+sudo PYTHONPATH=src python3 -m trcc.cli setup-udev
 ```
 
 > **Apple Silicon note:** USB-A ports on Apple Silicon Macs work through Thunderbolt hubs/docks. Make sure your USB connection to the cooler is going through a compatible hub. Direct USB-C adapters should also work.
@@ -1042,7 +1042,7 @@ sudo apt install python3-pip python3-venv sg3-utils python3-pyqt6 ffmpeg
 git clone https://github.com/Lexonight1/thermalright-trcc-linux.git
 cd thermalright-trcc-linux
 pip install -e .
-sudo trcc setup-udev
+sudo PYTHONPATH=src python3 -m trcc.cli setup-udev
 ```
 
 > **ARM note:** PyQt6 wheels may not be available for ARM. If `pip install PyQt6` fails, use the system package (`python3-pyqt6`) or build from source. The CLI commands (`trcc send`, `trcc test`, `trcc color`) work without PyQt6 — only the GUI requires it.
@@ -1190,7 +1190,7 @@ trcc download themes-320   # Download 320x320 themes
 
 **Fix:**
 1. Make sure the USB cable is plugged into both the cooler and your computer
-2. Run the udev setup if you haven't already: `sudo trcc setup-udev`
+2. Run the udev setup if you haven't already: `sudo PYTHONPATH=src python3 -m trcc.cli setup-udev`
 3. Unplug and replug the USB cable (or reboot)
 4. Check if the device appears: `ls /dev/sg*`
 5. Check `dmesg | tail -20` right after plugging in to see kernel messages
@@ -1201,7 +1201,7 @@ trcc download themes-320   # Download 320x320 themes
 
 **Fix:**
 ```bash
-sudo trcc setup-udev
+sudo PYTHONPATH=src python3 -m trcc.cli setup-udev
 # Then unplug/replug USB cable, or reboot
 ```
 
@@ -1343,7 +1343,7 @@ cat /etc/modprobe.d/trcc-lcd.conf
 
 If it's missing, recreate it:
 ```bash
-sudo trcc setup-udev
+sudo PYTHONPATH=src python3 -m trcc.cli setup-udev
 # Unplug/replug USB cable, or reboot
 ```
 
@@ -1382,7 +1382,7 @@ sudo pacman -S hidapi                # Arch
 **Fix:**
 ```bash
 # Set up udev rules (covers both SCSI and HID)
-sudo trcc setup-udev
+sudo PYTHONPATH=src python3 -m trcc.cli setup-udev
 # Unplug and replug USB cable
 
 # If that doesn't work, add the rule manually:
