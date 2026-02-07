@@ -7,6 +7,8 @@
 
 Native Linux port of the Thermalright LCD Control Center (Windows TRCC 2.0.3). Control and customize the LCD displays on Thermalright CPU coolers, AIO pump heads, and fan hubs — entirely from Linux.
 
+> **Note:** This project is under active development. Documentation and features may change. Use at your own risk — this is an unofficial community project, not affiliated with Thermalright.
+
 ## Supported Devices
 
 Plug in your device and run `lsusb` in a terminal. Find the line with your device — the USB ID is the `xxxx:xxxx` after `ID`:
@@ -49,7 +51,7 @@ Resolutions: 240x240, 320x320, 480x480, 640x480
 
 > **New to Linux?** See the **[Install Guide](doc/INSTALL_GUIDE.md)** — it explains every command and covers 25+ distros step by step.
 
-Find your distro, copy the block, paste in terminal. After it finishes: **unplug and replug the USB cable**, then run `trcc gui`.
+Find your distro, copy the block, paste in terminal. After it finishes: **unplug and replug the USB cable** (or reboot if it's not easily accessible), then run `trcc gui`.
 
 If your distro doesn't package PyQt6, just drop it from the system install line — `pip install -e .` will pull it from PyPI automatically.
 
