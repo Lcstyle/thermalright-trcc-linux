@@ -226,7 +226,6 @@ Remove all TRCC configuration, udev rules, and autostart files.
 ```bash
 trcc uninstall             # remove user config files
 
-
 # Also remove udev rules (requires root — run from the repo directory)
 sudo PYTHONPATH=src python3 -m trcc.cli uninstall
 ```
