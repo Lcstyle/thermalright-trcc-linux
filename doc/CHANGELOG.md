@@ -14,7 +14,7 @@
 - Added HID device PIDs (`0416:5302`, `0416:530A`, `0416:53E6`, `0418:5303`, `0418:5304`) to supported devices
 - Split README device tables into SCSI (stable) and HID (testing) sections with USB IDs
 - Added `lsusb` example to help users identify their device
-- Created HID Testing Guide with install, switch, and reporting instructions
+- Created [HID Testing Guide](HID_TESTING.md) with install, switch, and reporting instructions
 - Updated Documentation table on all branches
 
 ### Bug Fixes
