@@ -106,7 +106,7 @@ Find your distro, copy the one-liner, paste in terminal. After it finishes: **un
 sudo dnf install libusb1-devel python3-pyqt6 ffmpeg && git clone -b hid-protocol-testing https://github.com/Lexonight1/thermalright-trcc-linux.git && cd thermalright-trcc-linux && pip install --break-system-packages -e ".[hid]" && sudo trcc setup-udev
 ```
 
-#### Ubuntu / Debian / Mint / Pop!_OS
+#### Ubuntu / Debian / Mint / Pop!_OS / Zorin / elementary OS / Xubuntu
 
 ```bash
 sudo apt install libusb-1.0-0-dev python3-pyqt6 ffmpeg python3-pip && git clone -b hid-protocol-testing https://github.com/Lexonight1/thermalright-trcc-linux.git && cd thermalright-trcc-linux && pip install --break-system-packages -e ".[hid]" && sudo trcc setup-udev
