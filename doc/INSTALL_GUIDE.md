@@ -494,7 +494,7 @@ trcc setup-udev --dry-run
 
 ### After running setup-udev
 
-**Unplug and replug your cooler's USB cable.** The new permissions take effect when the device reconnects.
+**Unplug and replug the USB cable.** If the cable isn't easily accessible (internal header), reboot your computer instead. The new permissions take effect when the device reconnects.
 
 > **Why is this needed?** On Linux, USB devices default to root-only access. The udev rule changes this for Thermalright LCDs specifically. The USB quirk is needed because the kernel otherwise tries to use a protocol (UAS) that these displays don't support, which prevents the LCD from being detected at all.
 
@@ -562,6 +562,31 @@ The application window will appear, showing the same interface as the Windows ve
 > **Tip:** To run with a normal window title bar (for easier resizing/moving while getting used to the app):
 > ```bash
 > trcc gui --decorated
+> ```
+
+### Create a desktop shortcut (optional)
+
+If you'd rather launch TRCC from your app menu instead of typing a command every time, create a `.desktop` file:
+
+```bash
+mkdir -p ~/.local/share/applications
+cat > ~/.local/share/applications/trcc.desktop << 'EOF'
+[Desktop Entry]
+Name=TRCC LCD Control
+Comment=Thermalright LCD Control Center
+Exec=trcc gui
+Icon=preferences-desktop-display
+Terminal=false
+Type=Application
+Categories=Utility;System;
+EOF
+```
+
+This adds "TRCC LCD Control" to your application menu. On most desktops it appears immediately; on some you may need to log out and back in.
+
+> **Using a venv?** If you installed TRCC in a virtual environment, change the `Exec` line to:
+> ```
+> Exec=bash -c 'source ~/trcc-env/bin/activate && trcc gui'
 > ```
 
 ---
@@ -663,7 +688,7 @@ Or if installed via pip:
 sudo ~/trcc-env/bin/trcc setup-udev
 ```
 
-Then **unplug and replug** your cooler's USB cable.
+Then **unplug and replug the USB cable** (or reboot if it's not easily accessible).
 
 #### Step 6 — Run TRCC
 
@@ -719,7 +744,7 @@ pip install -e .
 # Set up device permissions (must run on the host)
 exit
 sudo distrobox-host-exec trcc setup-udev
-# Unplug and replug USB cable
+# Unplug/replug USB cable, or reboot
 
 # Run the GUI from the container
 distrobox enter trcc -- trcc gui
@@ -778,7 +803,7 @@ pip install --break-system-packages -e .
 
 # Set up device permissions
 sudo trcc setup-udev
-# Unplug and replug USB cable
+# Unplug/replug USB cable, or reboot
 
 # Re-enable read-only (optional, recommended)
 sudo steamos-readonly enable
@@ -807,7 +832,7 @@ exit
 sudo steamos-readonly disable
 sudo distrobox-host-exec trcc setup-udev
 sudo steamos-readonly enable
-# Unplug and replug USB cable
+# Unplug/replug USB cable, or reboot
 
 # Run from Distrobox
 distrobox enter trcc -- trcc gui
@@ -841,7 +866,7 @@ exit
 # Copy the rules manually (setup-udev won't work from inside apx)
 sudo cp /path/to/99-trcc-lcd.rules /etc/udev/rules.d/
 sudo udevadm control --reload-rules
-# Unplug and replug USB cable
+# Unplug/replug USB cable, or reboot
 
 # Run
 apx trcc-system run -- trcc gui
@@ -1058,7 +1083,7 @@ trcc download themes-320   # Download 320x320 themes
 **Fix:**
 1. Make sure the USB cable is plugged into both the cooler and your computer
 2. Run the udev setup if you haven't already: `sudo trcc setup-udev`
-3. Unplug and replug the USB cable
+3. Unplug and replug the USB cable (or reboot)
 4. Check if the device appears: `ls /dev/sg*`
 5. Check `dmesg | tail -20` right after plugging in to see kernel messages
 
@@ -1069,7 +1094,7 @@ trcc download themes-320   # Download 320x320 themes
 **Fix:**
 ```bash
 sudo trcc setup-udev
-# Then unplug and replug the USB cable
+# Then unplug/replug USB cable, or reboot
 ```
 
 ### "Error: PyQt6 not available"
@@ -1211,7 +1236,7 @@ cat /etc/modprobe.d/trcc-lcd.conf
 If it's missing, recreate it:
 ```bash
 sudo trcc setup-udev
-# Unplug and replug USB cable
+# Unplug/replug USB cable, or reboot
 ```
 
 If the problem persists, try manually blacklisting UAS for your device:
