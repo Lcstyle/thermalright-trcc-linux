@@ -76,129 +76,18 @@ TRCC Linux works with these Thermalright products that have a built-in LCD displ
 
 ---
 
-## HID Device Support (Testing Branch)
+## HID Device Support (Experimental)
 
-> **WE NEED TESTERS!** HID device support is implemented but **has not been validated with real hardware**. If you have an HID-protocol LCD device (see table below), please try the `hid-protocol-testing` branch and report your results — working or not — at https://github.com/Lexonight1/thermalright-trcc-linux/issues
+> **WE NEED TESTERS!** HID device support is implemented with 563 automated tests but **not validated with real hardware**. If you have an HID device, please test and report results at https://github.com/Lexonight1/thermalright-trcc-linux/issues
 
-### Which protocol does my device use?
-
-Plug in your cooler and run `lsusb`. Find the VID:PID for your device and check the table:
-
-| VID:PID | Protocol | lsusb description | Notes |
-|---------|----------|-------------------|-------|
-| `87cd:70db` | **SCSI** | Thermalright LCD Display | Stable (main branch) |
-| `0416:5406` | **SCSI** | ALi Corp LCD Display | Stable (main branch) |
-| `0402:3922` | **SCSI** | FROZEN WARFRAME | Stable (main branch) |
-| `0416:5302` | **HID** | Winbond Electronics Corp. USBDISPLAY | **Testing — needs testers** |
-| `0418:5303` | **HID** | ALi Corp. LCD Display | **Testing — needs testers** |
-| `0418:5304` | **HID** | ALi Corp. LCD Display | **Testing — needs testers** |
-
-**SCSI devices** (the first three) work on both the `main`/`stable` branch and this testing branch. No extra setup needed — follow the normal install steps below.
-
-**HID devices** (the last three) only work on the `hid-protocol-testing` branch. These use a completely different USB protocol (bulk transfer instead of SCSI commands) and require different system libraries.
-
-### Installing for HID devices
-
-Find your distro, copy the one-liner, paste in terminal. After it finishes: **unplug and replug the USB cable** (or reboot), then run `trcc gui`.
-
-#### Fedora / Nobara
+Install TRCC normally using the one-liners above, then run with the `--testing-hid` flag:
 
 ```bash
-sudo dnf install libusb1-devel python3-pyqt6 ffmpeg && git clone -b hid-protocol-testing https://github.com/Lexonight1/thermalright-trcc-linux.git && cd thermalright-trcc-linux && pip install --break-system-packages -e ".[hid]" && sudo PYTHONPATH=src python3 -m trcc.cli setup-udev && trcc install-desktop
+trcc --testing-hid detect       # Check if your device is found
+trcc --testing-hid gui          # Launch the GUI with HID support
 ```
 
-#### Ubuntu / Debian / Mint / Pop!_OS / Zorin / elementary OS / Xubuntu
-
-```bash
-sudo apt install libusb-1.0-0-dev python3-pyqt6 ffmpeg python3-pip && git clone -b hid-protocol-testing https://github.com/Lexonight1/thermalright-trcc-linux.git && cd thermalright-trcc-linux && pip install --break-system-packages -e ".[hid]" && sudo PYTHONPATH=src python3 -m trcc.cli setup-udev && trcc install-desktop
-```
-
-#### Arch / Manjaro / EndeavourOS / CachyOS / Garuda
-
-```bash
-sudo pacman -S libusb python-pyqt6 ffmpeg python-pip && git clone -b hid-protocol-testing https://github.com/Lexonight1/thermalright-trcc-linux.git && cd thermalright-trcc-linux && pip install --break-system-packages -e ".[hid]" && sudo PYTHONPATH=src python3 -m trcc.cli setup-udev && trcc install-desktop
-```
-
-#### openSUSE
-
-```bash
-sudo zypper install libusb-1_0-devel python3-qt6 ffmpeg python3-pip && git clone -b hid-protocol-testing https://github.com/Lexonight1/thermalright-trcc-linux.git && cd thermalright-trcc-linux && pip install --break-system-packages -e ".[hid]" && sudo PYTHONPATH=src python3 -m trcc.cli setup-udev && trcc install-desktop
-```
-
-#### Void Linux
-
-```bash
-sudo xbps-install libusb-devel python3-PyQt6 ffmpeg python3-pip && git clone -b hid-protocol-testing https://github.com/Lexonight1/thermalright-trcc-linux.git && cd thermalright-trcc-linux && pip install --break-system-packages -e ".[hid]" && sudo PYTHONPATH=src python3 -m trcc.cli setup-udev && trcc install-desktop
-```
-
-#### Gentoo
-
-```bash
-sudo emerge --ask dev-libs/libusb dev-python/PyQt6 media-video/ffmpeg dev-python/pip && git clone -b hid-protocol-testing https://github.com/Lexonight1/thermalright-trcc-linux.git && cd thermalright-trcc-linux && pip install --break-system-packages -e ".[hid]" && sudo PYTHONPATH=src python3 -m trcc.cli setup-udev && trcc install-desktop
-```
-
-#### Alpine
-
-```bash
-sudo apk add libusb-dev py3-pyqt6 ffmpeg py3-pip python3 && git clone -b hid-protocol-testing https://github.com/Lexonight1/thermalright-trcc-linux.git && cd thermalright-trcc-linux && pip install --break-system-packages -e ".[hid]" && sudo PYTHONPATH=src python3 -m trcc.cli setup-udev && trcc install-desktop
-```
-
-#### Bazzite / Fedora Atomic
-
-```bash
-git clone -b hid-protocol-testing https://github.com/Lexonight1/thermalright-trcc-linux.git && cd thermalright-trcc-linux && python3 -m venv ~/trcc-env && source ~/trcc-env/bin/activate && pip install -e ".[hid]" && sudo ~/trcc-env/bin/trcc setup-udev && trcc install-desktop
-```
-Launch: `source ~/trcc-env/bin/activate && trcc gui`
-
-> **Note:** `sg3_utils` is **not needed** for HID devices. The one-liners above install `libusb` instead, which is what HID uses. Everything else (PyQt6, FFmpeg, etc.) is the same as the SCSI install.
-
-#### Verify detection
-
-```bash
-trcc detect --all
-```
-
-HID devices should show as:
-
-```
-Device 1:
-  Device: Winbond USBDISPLAY (HID)
-  USB VID:PID: 0416:5302
-  Protocol: HID (type 2)
-  Model: CZTV
-```
-
-### HID udev rules
-
-HID devices need different udev rules than SCSI devices. `trcc setup-udev` on this branch creates rules for both, but if you need to add them manually:
-
-```bash
-# /etc/udev/rules.d/99-trcc-lcd.rules
-# HID LCD devices — allow non-root access
-SUBSYSTEM=="usb", ATTR{idVendor}=="0416", ATTR{idProduct}=="5302", MODE="0660"
-SUBSYSTEM=="usb", ATTR{idVendor}=="0418", ATTR{idProduct}=="5303", MODE="0660"
-SUBSYSTEM=="usb", ATTR{idVendor}=="0418", ATTR{idProduct}=="5304", MODE="0660"
-```
-
-Then reload and replug:
-
-```bash
-sudo udevadm control --reload-rules
-sudo udevadm trigger
-# Unplug and replug USB cable
-```
-
-### Reporting test results
-
-If you're testing an HID device, please open an issue with:
-
-1. Your device's `lsusb` output (VID:PID)
-2. Output of `trcc detect --all`
-3. Whether sending images works (`trcc test`)
-4. Any error messages from `trcc gui -vv` (verbose debug mode)
-5. Your distro and kernel version (`uname -r`)
-
-Even "it doesn't work" reports are valuable — they help us debug the protocol.
+See the **[HID Testing Guide](HID_TESTING.md)** for supported devices and what to report.
 
 ---
 

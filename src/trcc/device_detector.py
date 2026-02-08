@@ -8,12 +8,12 @@ Supported devices (SCSI — stable):
 - Winbond:      VID=0x0416, PID=0x5406
 - ALi Corp:     VID=0x0402, PID=0x3922
 
-Supported devices (HID LCD — testing, requires hid-protocol-testing branch):
+Supported devices (HID LCD — experimental, enable with --testing-hid):
 - Winbond:      VID=0x0416, PID=0x5302  (Type 2)
 - ALi Corp:     VID=0x0418, PID=0x5303  (Type 3)
 - ALi Corp:     VID=0x0418, PID=0x5304  (Type 3)
 
-Supported devices (HID LED — RGB controllers, FormLED in Windows):
+Supported devices (HID LED — RGB controllers, enable with --testing-hid):
 - Winbond:      VID=0x0416, PID=0x8001  (64-byte reports)
 """
 
@@ -70,7 +70,11 @@ KNOWN_DEVICES = {
         "button_image": "A1FROZEN_WARFRAME",
         "implementation": "ali_corp_lcd_v1"
     },
-    # HID devices from UCDevice.cs (TRCC 2.0.3 decompiled — decimal PIDs confirmed)
+}
+
+# HID LCD devices — experimental, gated behind --testing-hid flag.
+# From UCDevice.cs (TRCC 2.0.3 decompiled — decimal PIDs confirmed).
+_HID_LCD_DEVICES = {
     # device2: UsbHidDevice(1046, 21250) = 0x0416:0x5302, DA/DB/DC/DD handshake, 512-byte chunks
     (0x0416, 0x5302): {
         "vendor": "Winbond",
@@ -106,7 +110,7 @@ KNOWN_DEVICES = {
 # LED HID devices (RGB controllers — FormLED in Windows, not FormCZTV)
 # These use 64-byte HID reports for LED color control, not LCD image display.
 # device1: UsbHidDevice(1046, 32769) = 0x0416:0x8001, 64-byte packets
-KNOWN_LED_DEVICES = {
+_LED_DEVICES = {
     (0x0416, 0x8001): {
         "vendor": "Winbond",
         "product": "LED Controller (HID)",
@@ -117,6 +121,27 @@ KNOWN_LED_DEVICES = {
         "device_type": 1,
     },
 }
+
+# Backward-compat alias (tests and setup-udev reference this)
+KNOWN_LED_DEVICES = _LED_DEVICES
+
+# HID testing gate — disabled by default, enabled via `trcc --testing-hid`
+_hid_testing_enabled = False
+
+
+def enable_hid_testing():
+    """Enable HID device detection (called by CLI --testing-hid flag)."""
+    global _hid_testing_enabled
+    _hid_testing_enabled = True
+
+
+def _get_all_devices():
+    """Return device lookup dict, including HID devices only if enabled."""
+    all_devices = dict(KNOWN_DEVICES)
+    if _hid_testing_enabled:
+        all_devices.update(_HID_LCD_DEVICES)
+        all_devices.update(_LED_DEVICES)
+    return all_devices
 
 
 def run_command(cmd: List[str]) -> str:
@@ -155,7 +180,7 @@ def find_usb_devices() -> List[DetectedDevice]:
         pid = int(pid_str, 16)
 
         # Check if this is a known LCD or LED device
-        all_devices = {**KNOWN_DEVICES, **KNOWN_LED_DEVICES}
+        all_devices = _get_all_devices()
         if (vid, pid) not in all_devices:
             continue
 

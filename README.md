@@ -36,7 +36,7 @@ Match it to the tables below.
 | `0416:5406` | LC1, LC2, LC3, LC5 (AIO pump heads) |
 | `0402:3922` | FROZEN WARFRAME, FROZEN WARFRAME SE |
 
-**HID LCD devices** — on [`hid-protocol-testing`](https://github.com/Lexonight1/thermalright-trcc-linux/tree/hid-protocol-testing) branch (563 tests, CI passing), testers wanted:
+**HID LCD devices** — experimental (563 tests, needs hardware testers), enable with `trcc --testing-hid gui`:
 
 | USB ID | Devices |
 |--------|---------|
@@ -44,13 +44,13 @@ Match it to the tables below.
 | `0418:5303` | TARAN ARMS |
 | `0418:5304` | TARAN ARMS |
 
-**HID LED devices** — RGB LED control on [`hid-protocol-testing`](https://github.com/Lexonight1/thermalright-trcc-linux/tree/hid-protocol-testing) branch, testers wanted:
+**HID LED devices** — RGB LED control, enable with `trcc --testing-hid gui`:
 
 | USB ID | Devices |
 |--------|---------|
-| `0416:5302` | AX120 DIGITAL (LED mode) |
+| `0416:8001` | AX120 DIGITAL (LED mode) |
 
-> **HID device?** See the **[HID Testing Guide](doc/HID_TESTING.md)** — I don't have one of these devices, so I need testers.
+> **HID device?** See the **[HID Testing Guide](doc/HID_TESTING.md)** — install normally, then use `trcc --testing-hid gui`. I don't have one of these devices, so I need testers.
 
 ## Install
 

@@ -58,6 +58,11 @@ Examples:
         default=0,
         help="Increase verbosity (-v, -vv, -vvv)"
     )
+    parser.add_argument(
+        "--testing-hid",
+        action="store_true",
+        help="Enable HID device detection (experimental — testers wanted)"
+    )
 
     subparsers = parser.add_subparsers(dest="command", help="Available commands")
 
@@ -121,6 +126,11 @@ Examples:
     if args.command is None:
         parser.print_help()
         return 0
+
+    # Enable HID device detection if requested
+    if args.testing_hid:
+        from trcc.device_detector import enable_hid_testing
+        enable_hid_testing()
 
     if args.command == "gui":
         return gui(verbose=args.verbose, decorated=args.decorated)
@@ -447,9 +457,11 @@ def setup_udev(dry_run=False):
     (no /dev/sgX created). The :u quirk forces usb-storage bulk-only transport.
     """
     try:
-        from trcc.device_detector import KNOWN_DEVICES, KNOWN_LED_DEVICES
+        from trcc.device_detector import KNOWN_DEVICES, _HID_LCD_DEVICES, _LED_DEVICES
 
-        all_devices = {**KNOWN_DEVICES, **KNOWN_LED_DEVICES}
+        # Always include ALL devices in udev rules (so hardware is ready
+        # when users plug in HID devices, even without --testing-hid)
+        all_devices = {**KNOWN_DEVICES, **_HID_LCD_DEVICES, **_LED_DEVICES}
 
         # --- 1. udev rules (permissions) ---
         rules_path = "/etc/udev/rules.d/99-trcc-lcd.rules"
