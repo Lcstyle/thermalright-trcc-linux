@@ -640,29 +640,11 @@ class FormCZTVController:
         if json_path.exists():
             display_opts = self._load_dc_config(dc_path)  # prefers config.json
 
-        # Reference format: load background by path
-        bg_ref = display_opts.get('background_path')
-        if bg_ref:
-            bg_ref_path = Path(bg_ref)
-            if bg_ref_path.exists():
-                if bg_ref_path.suffix in ('.mp4', '.avi', '.mkv', '.webm'):
-                    self.video.load(bg_ref_path)
-                    first_frame = self.video.model.get_frame(0)
-                    if first_frame:
-                        self.current_image = first_frame
-                        self._update_preview(first_frame)
-                    self.video.play()
-                elif bg_ref_path.suffix == '.zt':
-                    self.video.load(bg_ref_path)
-                    self.video.play()
-                else:
-                    self._load_static_image(bg_ref_path)
-
-            # Enable overlay if dc config has elements
+            # Enable overlay BEFORE loading background (so _render_and_send uses it)
             if display_opts.get('overlay_enabled'):
                 self.overlay.enable(True)
 
-            # Load mask by reference path
+            # Load mask by reference path (before background so it's ready for render)
             mask_ref = display_opts.get('mask_path')
             if mask_ref:
                 mask_dir = Path(mask_ref)
@@ -673,6 +655,24 @@ class FormCZTVController:
                     if mask_pos:
                         self.overlay.set_theme_mask(
                             self.overlay.get_theme_mask()[0], mask_pos)
+
+            # Reference format: load background by path (triggers render with overlay+mask)
+            bg_ref = display_opts.get('background_path')
+            if bg_ref:
+                bg_ref_path = Path(bg_ref)
+                if bg_ref_path.exists():
+                    if bg_ref_path.suffix in ('.mp4', '.avi', '.mkv', '.webm'):
+                        self.video.load(bg_ref_path)
+                        first_frame = self.video.model.get_frame(0)
+                        if first_frame:
+                            self.current_image = first_frame
+                            self._update_preview(first_frame)
+                        self.video.play()
+                    elif bg_ref_path.suffix == '.zt':
+                        self.video.load(bg_ref_path)
+                        self.video.play()
+                    else:
+                        self._load_static_image(bg_ref_path)
 
             self._update_status(f"Theme: {theme.name}")
             return
