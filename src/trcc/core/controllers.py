@@ -817,9 +817,9 @@ class FormCZTVController:
         safe_name = f'Custom_{name}' if not name.startswith('Custom_') else name
         theme_path = data_dir / f'Theme{self.lcd_width}{self.lcd_height}' / safe_name
         try:
-            # Ensure current background is in working dir
+            # Always write current background to working dir (overwrite on re-save)
             bg_path = self.working_dir / '00.png'
-            if not bg_path.exists() and self.current_image:
+            if self.current_image:
                 self.current_image.save(str(bg_path))
 
             # Generate thumbnail from rendered preview (background + mask + overlays)
