@@ -57,7 +57,7 @@ from ..sensor_enumerator import SensorEnumerator
 from .assets import Assets, load_pixmap
 from .base import create_image_button, set_background_pixmap
 from .constants import Colors, Layout, Sizes, Styles
-from .uc_about import UCAbout
+from .uc_about import UCAbout, ensure_autostart
 from .uc_activity_sidebar import UCActivitySidebar
 from .uc_device import UCDevice
 from .uc_image_cut import UCImageCut
@@ -201,12 +201,23 @@ class TRCCMainWindowMVC(QMainWindow):
         if saved_unit == 1:
             self.uc_about._set_temp('F')
 
+        # Auto-enable autostart on first launch (matches Windows KaijiQidong)
+        autostart_state = ensure_autostart()
+        self.uc_about._autostart = autostart_state
+        self.uc_about.startup_btn.setChecked(autostart_state)
+
         # System tray icon
         self._setup_systray()
 
         # Detect devices immediately, then poll every 5s
         self._on_device_poll()
         self._device_timer.start(5000)
+
+        # UCDevice auto-selects first device during _setup_ui(), but the signal
+        # fires before _connect_view_signals(). Re-trigger selection now that
+        # callbacks are wired so _active_device_key gets set and config persists.
+        if self.uc_device.selected_device and not self._active_device_key:
+            self._on_device_widget_clicked(self.uc_device.selected_device)
 
     def _apply_dark_theme(self):
         """Apply dark theme via QPalette (not stylesheet - blocks palette on children)."""
@@ -773,8 +784,9 @@ class TRCCMainWindowMVC(QMainWindow):
         self.rotation_combo.blockSignals(False)
         self.controller.set_rotation(rotation_index * 90)
 
-        # Restore per-device theme
+        # Restore per-device theme (or auto-load first available)
         saved_theme = cfg.get('theme_path')
+        theme_loaded = False
         if saved_theme:
             theme_path = Path(saved_theme)
             if theme_path.exists():
@@ -785,6 +797,18 @@ class TRCCMainWindowMVC(QMainWindow):
                     self.controller.themes.select_theme(theme)
                 else:
                     self._select_theme_from_path(theme_path)
+                theme_loaded = True
+
+        if not theme_loaded:
+            # Auto-load first local theme so config is always populated
+            # (ensures --last-one works after first GUI session)
+            w, h = device.resolution
+            theme_base = self._data_dir / f'Theme{w}{h}'
+            if theme_base.exists():
+                for item in sorted(theme_base.iterdir()):
+                    if item.is_dir() and (item / '00.png').exists():
+                        self._select_theme_from_path(item)
+                        break
 
         # Restore per-device carousel
         carousel = cfg.get('carousel')
@@ -938,6 +962,10 @@ class TRCCMainWindowMVC(QMainWindow):
             if self._led_active:
                 self._stop_led_view()
             self._show_view('form')
+            # Skip full reload if same device already selected
+            current = self.controller.devices.get_selected()
+            if current and current.path == device.path:
+                return
             self.controller.devices.select_device(device)
 
     def _select_theme_from_path(self, path: Path):
@@ -960,6 +988,11 @@ class TRCCMainWindowMVC(QMainWindow):
     def _on_local_theme_clicked(self, theme_info: dict):
         """Forward local theme selection to controller."""
         self._select_theme_from_path(Path(theme_info.get('path', '')))
+        # Update name input so re-saving overwrites the same theme
+        name = theme_info.get('name', '')
+        if name.startswith('Custom_'):
+            name = name[len('Custom_'):]
+        self.theme_name_input.setText(name)
 
     def _on_cloud_theme_clicked(self, theme_info: dict):
         """Forward cloud theme selection to controller.
@@ -1164,6 +1197,10 @@ class TRCCMainWindowMVC(QMainWindow):
             theme_dir = self._data_dir / f'Theme{w}{h}'
             self.uc_theme_local.set_theme_directory(theme_dir)
             self.uc_theme_local.load_themes()
+            # Persist saved theme path for --last-one resume
+            if self._active_device_key and self.controller.current_theme_path:
+                save_device_setting(self._active_device_key, 'theme_path',
+                                    str(self.controller.current_theme_path))
 
     def _on_export_clicked(self):
         """Handle export theme button click."""
@@ -1336,8 +1373,8 @@ class TRCCMainWindowMVC(QMainWindow):
         if reply == QMessageBox.StandardButton.Yes:
             self.uc_theme_local.delete_theme(theme_info)
             # If deleted theme was the current one, clear preview
-            if (self.controller.current_theme and  # type: ignore[attr-defined]  # pyright: ignore[reportAttributeAccessIssue]
-                    getattr(self.controller.current_theme, 'path', None) == theme_info.get('path')):  # pyright: ignore[reportAttributeAccessIssue]
+            if (self.controller.current_theme_path and
+                    str(self.controller.current_theme_path) == theme_info.get('path')):
                 self.controller.current_image = None
                 self.uc_preview.set_image(None)
             self.uc_preview.set_status(f"Deleted: {name}")
@@ -1674,23 +1711,44 @@ class TRCCMainWindowMVC(QMainWindow):
     # =========================================================================
 
     def _load_theme_overlay_config(self, theme_dir: Path):
-        """Load overlay config from theme's config1.dc into settings panel."""
-        dc_path = theme_dir / 'config1.dc'
-        if not dc_path.exists():
-            return
-        try:
-            from ..dc_parser import dc_to_overlay_config, parse_dc_file
-            dc_data = parse_dc_file(str(dc_path))
-            overlay_config = dc_to_overlay_config(dc_data)
-            self.uc_theme_setting.load_from_overlay_config(overlay_config)
+        """Load overlay config from theme's config.json or config1.dc into settings panel."""
+        overlay_config = None
 
-            # Auto-enable overlay and start metrics when DC has elements
-            if overlay_config:
-                self.controller.overlay.set_config(overlay_config)
-                self.controller.overlay.enable(True)
-                self.start_metrics()
-        except Exception:
-            pass
+        # Try reference config.json first (Custom_ themes saved with path refs)
+        json_path = theme_dir / 'config.json'
+        if json_path.exists():
+            try:
+                from ..dc_parser import load_config_json
+                result = load_config_json(str(json_path))
+                if result is not None:
+                    overlay_config = result[0]  # (overlay_config, display_options)
+            except Exception:
+                pass
+
+        # Fall back to binary config1.dc
+        if overlay_config is None:
+            dc_path = theme_dir / 'config1.dc'
+            if not dc_path.exists():
+                return
+            try:
+                from ..dc_parser import dc_to_overlay_config, parse_dc_file
+                dc_data = parse_dc_file(str(dc_path))
+                overlay_config = dc_to_overlay_config(dc_data)
+            except Exception:
+                return
+
+        if overlay_config:
+            self.uc_theme_setting.load_from_overlay_config(overlay_config)
+            self.controller.overlay.set_config(overlay_config)
+            self.controller.overlay.enable(True)
+            self.start_metrics()
+
+            # Persist to per-device config so overlay survives device re-selection
+            if self._active_device_key:
+                save_device_setting(self._active_device_key, 'overlay', {
+                    'enabled': True,
+                    'config': overlay_config,
+                })
 
     # =========================================================================
     # Device Hot-Plug
@@ -1728,8 +1786,10 @@ class TRCCMainWindowMVC(QMainWindow):
                 else:
                     self.controller.devices.select_device(device)
                     self.uc_preview.set_status(f"Device: {device.path}")
-        except (ImportError, Exception):
+        except ImportError:
             pass
+        except Exception as e:
+            print(f"[device_poll] {e}")
 
     def _on_rotation_change(self, index):
         """Handle rotation combobox change (Windows UpDateUCComboBox1).
@@ -1858,8 +1918,15 @@ class TRCCMainWindowMVC(QMainWindow):
             app.quit()
 
 
-def run_mvc_app(data_dir: Path | None = None, decorated: bool = False):
-    """Run the MVC PyQt6 application."""
+def run_mvc_app(data_dir: Path | None = None, decorated: bool = False,
+                start_hidden: bool = False):
+    """Run the MVC PyQt6 application.
+
+    Args:
+        data_dir: Override data directory path.
+        decorated: Use decorated window with titlebar.
+        start_hidden: Start minimized to system tray (--last-one autostart).
+    """
     app = QApplication(sys.argv)
     app.setQuitOnLastWindowClosed(False)
 
@@ -1869,7 +1936,8 @@ def run_mvc_app(data_dir: Path | None = None, decorated: bool = False):
     app.setFont(font)
 
     window = TRCCMainWindowMVC(data_dir, decorated=decorated)
-    window.show()
+    if not start_hidden:
+        window.show()
 
     return app.exec()
 

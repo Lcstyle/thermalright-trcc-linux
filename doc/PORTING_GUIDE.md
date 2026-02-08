@@ -94,7 +94,7 @@ This lets you swap GUI frameworks (PyQt6, Tkinter, GTK) without rewriting logic.
 | `%LocalAppData%\Company\App\` | `~/.local/share/app/` (XDG_DATA_HOME) |
 | `Application.StartupPath` | `importlib.resources` or `__file__` relative |
 | Registry (`HKCU\Software\...`) | JSON config file |
-| Windows Startup folder | Autostart `.desktop` file in `~/.config/autostart/` |
+| Windows Startup folder / `KaijiQidong()` | Autostart `.desktop` file in `~/.config/autostart/` (auto-created on first launch via `ensure_autostart()`) |
 
 ### Media
 

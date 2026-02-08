@@ -150,6 +150,12 @@ class Assets:
     CHECKBOX_ON = 'P点选框A.png'
 
     @classmethod
+    def get(cls, name: str) -> str | None:
+        """Return asset path as string if it exists, else None."""
+        path = get_asset_path(name)
+        return str(path) if path.exists() else None
+
+    @classmethod
     def get_preview_for_resolution(cls, width: int, height: int) -> str:
         """Get preview frame asset name for resolution."""
         name = f'P预览{width}X{height}.png'

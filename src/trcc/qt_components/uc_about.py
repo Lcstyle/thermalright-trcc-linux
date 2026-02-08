@@ -32,9 +32,20 @@ _AUTOSTART_FILE = _AUTOSTART_DIR / 'trcc.desktop'
 
 
 def _get_trcc_exec() -> str:
-    """Resolve full path to trcc binary for autostart Exec= line."""
+    """Resolve full path to trcc binary for autostart Exec= line.
+
+    Tries (in order):
+    1. shutil.which('trcc') — pip-installed entry point on PATH
+    2. PYTHONPATH=<src> python3 -m trcc.cli — git clone fallback
+    """
+    import sys
     trcc_path = shutil.which('trcc')
-    return trcc_path if trcc_path else 'trcc'
+    if trcc_path:
+        return trcc_path
+    # Fallback: use the running Python to invoke trcc as a module
+    # Resolve the src/ directory so PYTHONPATH is set correctly
+    src_dir = str(Path(__file__).parent.parent.parent)
+    return f'env PYTHONPATH={src_dir} {sys.executable} -m trcc.cli'
 
 
 def _make_desktop_entry() -> str:
@@ -45,7 +56,7 @@ def _make_desktop_entry() -> str:
 Type=Application
 Name=TRCC Linux
 Comment=Thermalright LCD Control Center
-Exec={exec_path} gui
+Exec={exec_path} --last-one
 Icon=trcc
 Terminal=false
 Categories=Utility;System;
@@ -63,9 +74,40 @@ def _set_autostart(enabled: bool):
     if enabled:
         _AUTOSTART_DIR.mkdir(parents=True, exist_ok=True)
         _AUTOSTART_FILE.write_text(_make_desktop_entry())
+        print(f"[+] Autostart enabled: {_AUTOSTART_FILE}")
     else:
         if _AUTOSTART_FILE.exists():
             _AUTOSTART_FILE.unlink()
+        print(f"[-] Autostart disabled")
+
+
+def ensure_autostart():
+    """Auto-enable autostart on first launch (matches Windows KaijiQidong).
+
+    On first launch: creates .desktop file and marks config as configured.
+    On subsequent launches: refreshes .desktop if Exec path changed.
+    Returns the current autostart state (bool).
+    """
+    from ..paths import load_config, save_config
+
+    config = load_config()
+
+    if not config.get('autostart_configured'):
+        # First launch — auto-enable (like Windows registry auto-add)
+        _set_autostart(True)
+        config['autostart_configured'] = True
+        save_config(config)
+        return True
+
+    if _AUTOSTART_FILE.exists():
+        # Refresh .desktop in case Exec path changed (like Windows path mismatch check)
+        current = _AUTOSTART_FILE.read_text()
+        expected = _make_desktop_entry()
+        if current != expected:
+            _AUTOSTART_FILE.write_text(expected)
+            print(f"[~] Autostart refreshed: {_AUTOSTART_FILE}")
+
+    return _is_autostart_enabled()
 
 
 class UCAbout(BasePanel):

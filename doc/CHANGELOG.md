@@ -45,6 +45,13 @@
 - Added [CLI Reference](CLI_REFERENCE.md) with all commands, options, and troubleshooting
 - Updated Documentation table on all branches
 
+### Autostart on Login
+- Auto-enable autostart on first GUI launch (matches Windows `KaijiQidong()` behavior)
+- Creates `~/.config/autostart/trcc.desktop` with `trcc --last-one` on first run
+- Checkbox in Settings panel reflects and toggles the actual autostart state
+- Subsequent launches refresh the `.desktop` file if the install path changed
+- 15 new autostart tests covering first-launch, toggle, path refresh, and edge cases
+
 ### Bug Fixes
 - Theme.png preview now includes rendered overlays and masks (was showing raw background only)
 - `dc_writer.py` only writes fallback Theme.png if one doesn't already exist (controller writes the better rendered version)
