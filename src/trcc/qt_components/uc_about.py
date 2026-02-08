@@ -56,7 +56,7 @@ def _make_desktop_entry() -> str:
 Type=Application
 Name=TRCC Linux
 Comment=Thermalright LCD Control Center
-Exec={exec_path} resume
+Exec={exec_path} --last-one
 Icon=trcc
 Terminal=false
 Categories=Utility;System;

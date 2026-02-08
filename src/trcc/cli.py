@@ -63,6 +63,11 @@ Examples:
         action="store_true",
         help="No-op (HID devices are now auto-detected when plugged in)"
     )
+    parser.add_argument(
+        "--last-one",
+        action="store_true",
+        help="Send last-used theme to device and exit (no GUI)"
+    )
 
     subparsers = parser.add_subparsers(dest="command", help="Available commands")
 
@@ -125,6 +130,9 @@ Examples:
     download_parser.add_argument("--info", "-i", action="store_true", help="Show pack info")
 
     args = parser.parse_args()
+
+    if args.last_one:
+        return resume()
 
     if args.command is None:
         parser.print_help()

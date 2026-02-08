@@ -948,6 +948,14 @@ class TestResume(unittest.TestCase):
         self.assertEqual(result, 0)
         mock_fn.assert_called_once()
 
+    def test_last_one_flag(self):
+        """'trcc --last-one' dispatches to resume() without subcommand."""
+        with patch('trcc.cli.resume', return_value=0) as mock_fn, \
+             patch('sys.argv', ['trcc', '--last-one']):
+            result = main()
+        self.assertEqual(result, 0)
+        mock_fn.assert_called_once()
+
 
 # ── uninstall ────────────────────────────────────────────────────────────────
 
