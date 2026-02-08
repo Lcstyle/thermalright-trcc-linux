@@ -8,6 +8,7 @@ Controllers are GUI-framework independent. They:
 """
 from __future__ import annotations
 
+import json
 import shutil
 import tempfile
 import threading
@@ -868,7 +869,6 @@ class FormCZTVController:
                     shutil.copy2(str(f), str(theme_path / f.name))
 
             # Write config.json alongside config1.dc for --last-one resume
-            import json
             config_json = {
                 'name': safe_name,
                 'resolution': [self.lcd_width, self.lcd_height],
