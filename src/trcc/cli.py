@@ -111,6 +111,9 @@ Examples:
     # Install desktop entry command
     subparsers.add_parser("install-desktop", help="Install application menu entry and icon")
 
+    # Resume command
+    subparsers.add_parser("resume", help="Send last-used theme to each detected device (headless)")
+
     # Uninstall command
     subparsers.add_parser("uninstall", help="Remove all TRCC config, udev rules, and autostart files")
 
@@ -147,6 +150,8 @@ Examples:
         return setup_udev(dry_run=args.dry_run)
     elif args.command == "install-desktop":
         return install_desktop()
+    elif args.command == "resume":
+        return resume()
     elif args.command == "uninstall":
         return uninstall()
     elif args.command == "download":
@@ -379,6 +384,94 @@ def send_color(hex_color, device=None):
         return 0
     except Exception as e:
         print(f"Error sending color: {e}")
+        return 1
+
+
+def resume():
+    """Send last-used theme to each detected device (headless, no GUI)."""
+    try:
+        from trcc.device_detector import detect_devices
+        from trcc.lcd_driver import LCDDriver
+        from trcc.paths import device_config_key, get_device_config
+
+        devices = detect_devices()
+        if not devices:
+            print("No compatible TRCC device detected.")
+            return 1
+
+        sent = 0
+        for i, dev in enumerate(devices):
+            if dev.protocol != "scsi":
+                continue
+
+            key = device_config_key(i, dev.vid, dev.pid)
+            cfg = get_device_config(key)
+            theme_path = cfg.get("theme_path")
+
+            if not theme_path:
+                print(f"  [{dev.product_name}] No saved theme, skipping")
+                continue
+
+            # Find the image to send (00.png in theme dir, or direct file)
+            image_path = None
+            if os.path.isdir(theme_path):
+                candidate = os.path.join(theme_path, "00.png")
+                if os.path.exists(candidate):
+                    image_path = candidate
+            elif os.path.isfile(theme_path):
+                image_path = theme_path
+
+            if not image_path:
+                print(f"  [{dev.product_name}] Theme not found: {theme_path}")
+                continue
+
+            try:
+                from PIL import Image, ImageEnhance
+
+                driver = LCDDriver(device_path=dev.scsi_device)
+                w, h = driver.implementation.resolution
+
+                img = Image.open(image_path).convert("RGB").resize((w, h))
+
+                # Apply brightness
+                brightness_level = cfg.get("brightness_level", 3)
+                brightness_pct = {1: 25, 2: 50, 3: 100}.get(brightness_level, 100)
+                if brightness_pct < 100:
+                    img = ImageEnhance.Brightness(img).enhance(brightness_pct / 100.0)
+
+                # Apply rotation
+                rotation = cfg.get("rotation", 0)
+                if rotation == 90:
+                    img = img.transpose(Image.Transpose.ROTATE_270)
+                elif rotation == 180:
+                    img = img.transpose(Image.Transpose.ROTATE_180)
+                elif rotation == 270:
+                    img = img.transpose(Image.Transpose.ROTATE_90)
+
+                # Convert to RGB565 and send
+                import numpy as np
+                arr = np.array(img)
+                r = arr[:, :, 0].astype(np.uint16)
+                g = arr[:, :, 1].astype(np.uint16)
+                b = arr[:, :, 2].astype(np.uint16)
+                rgb565 = ((r >> 3) << 11) | ((g >> 2) << 5) | (b >> 3)
+                frame = rgb565.astype(np.uint16).tobytes()
+
+                driver.send_frame(frame)
+                print(f"  [{dev.product_name}] Sent: {os.path.basename(theme_path)}")
+                sent += 1
+            except Exception as e:
+                print(f"  [{dev.product_name}] Error: {e}")
+
+        if sent == 0:
+            print("No themes were sent. Use the GUI to set a theme first.")
+            return 1
+
+        print(f"Resumed {sent} device(s).")
+        return 0
+
+    except Exception as e:
+        print(f"Error: {e}")
         return 1
 
 

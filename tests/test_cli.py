@@ -31,6 +31,7 @@ from trcc.cli import (
     gui,
     main,
     reset_device,
+    resume,
     select_device,
     send_color,
     send_image,
@@ -780,6 +781,172 @@ class TestDownloadThemesEdge(unittest.TestCase):
     def test_exception_returns_1(self, _):
         result = download_themes(pack='320x320')
         self.assertEqual(result, 1)
+
+
+# ── resume() ─────────────────────────────────────────────────────────────────
+
+class TestResume(unittest.TestCase):
+    """Test resume() command — send last-used theme headlessly."""
+
+    def _make_device(self, path='/dev/sg0', name='LCD', vid=0x87CD, pid=0x70DB, protocol='scsi'):
+        dev = MagicMock()
+        dev.scsi_device = path
+        dev.product_name = name
+        dev.vid = vid
+        dev.pid = pid
+        dev.protocol = protocol
+        return dev
+
+    def test_no_devices(self):
+        """No devices → returns 1."""
+        mock_det = MagicMock()
+        mock_det.detect_devices.return_value = []
+        with patch.dict('sys.modules', {
+            'trcc.device_detector': mock_det,
+            'trcc.lcd_driver': MagicMock(),
+        }):
+            result = resume()
+        self.assertEqual(result, 1)
+
+    def test_no_saved_theme(self):
+        """Device with no saved theme → returns 1."""
+        dev = self._make_device()
+        mock_det = MagicMock()
+        mock_det.detect_devices.return_value = [dev]
+        mock_paths = MagicMock()
+        mock_paths.device_config_key.return_value = '0:87cd_70db'
+        mock_paths.get_device_config.return_value = {}
+
+        with patch.dict('sys.modules', {
+            'trcc.device_detector': mock_det,
+            'trcc.lcd_driver': MagicMock(),
+            'trcc.paths': mock_paths,
+        }):
+            result = resume()
+        self.assertEqual(result, 1)
+
+    def test_sends_theme_from_dir(self):
+        """Device with saved theme dir → sends 00.png successfully."""
+        with tempfile.TemporaryDirectory() as tmp:
+            # Create a theme dir with 00.png
+            theme_dir = os.path.join(tmp, 'Theme1')
+            os.makedirs(theme_dir)
+            # Create a small valid image
+            from PIL import Image
+            img = Image.new('RGB', (10, 10), color=(255, 0, 0))
+            img.save(os.path.join(theme_dir, '00.png'))
+
+            dev = self._make_device()
+            mock_det = MagicMock()
+            mock_det.detect_devices.return_value = [dev]
+            mock_paths = MagicMock()
+            mock_paths.device_config_key.return_value = '0:87cd_70db'
+            mock_paths.get_device_config.return_value = {
+                'theme_path': theme_dir,
+                'brightness_level': 3,
+                'rotation': 0,
+            }
+
+            mock_driver = MagicMock()
+            mock_driver.implementation.resolution = (320, 320)
+            mock_lcd = MagicMock()
+            mock_lcd.LCDDriver.return_value = mock_driver
+
+            with patch.dict('sys.modules', {
+                'trcc.device_detector': mock_det,
+                'trcc.lcd_driver': mock_lcd,
+                'trcc.paths': mock_paths,
+            }):
+                result = resume()
+            self.assertEqual(result, 0)
+            mock_driver.send_frame.assert_called_once()
+
+    def test_applies_brightness_and_rotation(self):
+        """Resume applies brightness L1 (25%) and rotation 90."""
+        with tempfile.TemporaryDirectory() as tmp:
+            theme_dir = os.path.join(tmp, 'Theme1')
+            os.makedirs(theme_dir)
+            from PIL import Image
+            img = Image.new('RGB', (10, 10), color=(0, 255, 0))
+            img.save(os.path.join(theme_dir, '00.png'))
+
+            dev = self._make_device()
+            mock_det = MagicMock()
+            mock_det.detect_devices.return_value = [dev]
+            mock_paths = MagicMock()
+            mock_paths.device_config_key.return_value = '0:87cd_70db'
+            mock_paths.get_device_config.return_value = {
+                'theme_path': theme_dir,
+                'brightness_level': 1,
+                'rotation': 90,
+            }
+
+            mock_driver = MagicMock()
+            mock_driver.implementation.resolution = (320, 320)
+            mock_lcd = MagicMock()
+            mock_lcd.LCDDriver.return_value = mock_driver
+
+            with patch.dict('sys.modules', {
+                'trcc.device_detector': mock_det,
+                'trcc.lcd_driver': mock_lcd,
+                'trcc.paths': mock_paths,
+            }):
+                result = resume()
+            self.assertEqual(result, 0)
+
+    def test_skips_hid_devices(self):
+        """HID devices are skipped, only SCSI resumed."""
+        hid_dev = self._make_device('/dev/hidraw0', 'LED', protocol='hid')
+        mock_det = MagicMock()
+        mock_det.detect_devices.return_value = [hid_dev]
+        mock_paths = MagicMock()
+
+        with patch.dict('sys.modules', {
+            'trcc.device_detector': mock_det,
+            'trcc.lcd_driver': MagicMock(),
+            'trcc.paths': mock_paths,
+        }):
+            result = resume()
+        self.assertEqual(result, 1)
+
+    def test_theme_path_not_found(self):
+        """Theme path doesn't exist on disk → skipped."""
+        dev = self._make_device()
+        mock_det = MagicMock()
+        mock_det.detect_devices.return_value = [dev]
+        mock_paths = MagicMock()
+        mock_paths.device_config_key.return_value = '0:87cd_70db'
+        mock_paths.get_device_config.return_value = {
+            'theme_path': '/nonexistent/theme/dir',
+        }
+
+        with patch.dict('sys.modules', {
+            'trcc.device_detector': mock_det,
+            'trcc.lcd_driver': MagicMock(),
+            'trcc.paths': mock_paths,
+        }):
+            result = resume()
+        self.assertEqual(result, 1)
+
+    def test_exception_returns_1(self):
+        """Top-level exception → returns 1."""
+        mock_det = MagicMock()
+        mock_det.detect_devices.side_effect = RuntimeError('fail')
+        with patch.dict('sys.modules', {
+            'trcc.device_detector': mock_det,
+            'trcc.lcd_driver': MagicMock(),
+            'trcc.paths': MagicMock(),
+        }):
+            result = resume()
+        self.assertEqual(result, 1)
+
+    def test_dispatch_resume(self):
+        """main() dispatches 'resume' to resume()."""
+        with patch('trcc.cli.resume', return_value=0) as mock_fn, \
+             patch('sys.argv', ['trcc', 'resume']):
+            result = main()
+        self.assertEqual(result, 0)
+        mock_fn.assert_called_once()
 
 
 # ── uninstall ────────────────────────────────────────────────────────────────
