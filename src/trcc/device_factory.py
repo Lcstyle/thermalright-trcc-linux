@@ -1,11 +1,11 @@
 """
-Device Protocol Factory — unified API for SCSI and HID LCD devices.
+Device Protocol Factory — unified API for SCSI, HID LCD, and HID LED devices.
 
-Observer pattern: DeviceProtocol ABC defines the contract. ScsiProtocol and
-HidProtocol are separate implementations with identical API surfaces.
+Observer pattern: DeviceProtocol ABC defines the contract. ScsiProtocol,
+HidProtocol, and LedProtocol are separate implementations with identical API.
 Observers register callbacks for send_complete, error, and state changes.
 
-The factory creates the right protocol class based on device PID, SCSI first.
+The factory creates the right protocol class based on device PID/implementation.
 
 Usage::
 
@@ -14,12 +14,13 @@ Usage::
     protocol = DeviceProtocolFactory.get_protocol(device_info)
     protocol.on_send_complete = lambda ok: print(f"sent: {ok}")
     protocol.on_error = lambda msg: print(f"err: {msg}")
-    protocol.send_image(rgb565_data, width, height)
+    protocol.send_image(rgb565_data, width, height)      # LCD devices
+    protocol.send_led_data(colors, is_on, True, 100)     # LED devices
 """
 
 from abc import ABC, abstractmethod
 from dataclasses import dataclass, field
-from typing import Callable, Dict, List, Optional
+from typing import Callable, Dict, List, Optional, Tuple
 
 
 # =========================================================================
@@ -74,6 +75,32 @@ class DeviceProtocol(ABC):
     @abstractmethod
     def is_available(self) -> bool:
         """Whether the required backend (sg_raw / pyusb / hidapi) is installed."""
+
+    def send_led_data(
+        self,
+        led_colors: List[Tuple[int, int, int]],
+        is_on: Optional[List[bool]] = None,
+        global_on: bool = True,
+        brightness: int = 100,
+    ) -> bool:
+        """Send LED color data to an RGB LED device.
+
+        Default implementation returns False (not an LED device).
+        Only LedProtocol overrides this.
+        """
+        return False
+
+    def handshake(self) -> Optional[object]:
+        """Perform device handshake (HID devices only).
+
+        Returns handshake info or None for protocols that don't handshake.
+        """
+        return None
+
+    @property
+    def is_led(self) -> bool:
+        """Whether this protocol is for LED control (not LCD)."""
+        return False
 
     def _notify_send_complete(self, success: bool):
         """Notify observers of send result."""
@@ -243,6 +270,160 @@ class HidProtocol(DeviceProtocol):
 
 
 # =========================================================================
+# LedProtocol — HID LED RGB controller
+# =========================================================================
+
+class LedProtocol(DeviceProtocol):
+    """LED device communication via HID 64-byte reports (FormLED equivalent).
+
+    Unlike HidProtocol (LCD images), LedProtocol sends LED color arrays
+    for RGB LED effects. Uses the same UsbTransport as HidProtocol.
+    """
+
+    def __init__(self, vid: int, pid: int):
+        super().__init__()
+        self._vid = vid
+        self._pid = pid
+        self._transport = None
+        self._sender = None
+        self._handshake_info = None
+
+    def send_image(self, image_data: bytes, width: int, height: int) -> bool:
+        """No-op — LED devices don't display images."""
+        return False
+
+    def send_led_data(
+        self,
+        led_colors: List[Tuple[int, int, int]],
+        is_on: Optional[List[bool]] = None,
+        global_on: bool = True,
+        brightness: int = 100,
+    ) -> bool:
+        """Send LED color data to the device.
+
+        Args:
+            led_colors: List of (R, G, B) tuples, one per LED.
+            is_on: Per-LED on/off state. None means all on.
+            global_on: Global on/off switch.
+            brightness: Global brightness 0-100.
+
+        Returns:
+            True if the send succeeded.
+        """
+        try:
+            if self._transport is None:
+                self._transport = self._create_transport()
+                self._transport.open()
+                self._notify_state_changed("transport_open", True)
+
+            if self._sender is None:
+                from .led_device import LedHidSender
+                self._sender = LedHidSender(self._transport)
+
+            from .led_device import LedPacketBuilder
+            packet = LedPacketBuilder.build_led_packet(
+                led_colors, is_on, global_on, brightness
+            )
+            success = self._sender.send_led_data(packet)
+            self._notify_send_complete(success)
+            return success
+        except Exception as e:
+            self._notify_error(f"LED send failed: {e}")
+            self._notify_send_complete(False)
+            return False
+
+    def handshake(self):
+        """Perform LED device handshake and return device info.
+
+        Returns:
+            LedHandshakeInfo with pm byte and resolved device style.
+        """
+        try:
+            if self._transport is None:
+                self._transport = self._create_transport()
+                self._transport.open()
+                self._notify_state_changed("transport_open", True)
+
+            if self._sender is None:
+                from .led_device import LedHidSender
+                self._sender = LedHidSender(self._transport)
+
+            self._handshake_info = self._sender.handshake()
+            self._notify_state_changed("handshake_complete", True)
+            return self._handshake_info
+        except Exception as e:
+            self._notify_error(f"LED handshake failed: {e}")
+            return None
+
+    def close(self) -> None:
+        if self._transport is not None:
+            try:
+                self._transport.close()
+            except Exception:
+                pass
+            self._transport = None
+            self._sender = None
+            self._notify_state_changed("transport_open", False)
+
+    def get_info(self) -> 'ProtocolInfo':
+        backends = _get_hid_backends()
+        if backends["pyusb"]:
+            active = "pyusb"
+        elif backends["hidapi"]:
+            active = "hidapi"
+        else:
+            active = "none"
+        backends["sg_raw"] = False
+        return ProtocolInfo(
+            protocol="led",
+            device_type=1,
+            protocol_display="LED (HID 64-byte)",
+            device_type_display="RGB LED Controller",
+            active_backend=active,
+            backends=backends,
+            transport_open=self._transport is not None
+                           and getattr(self._transport, 'is_open', False),
+        )
+
+    def _create_transport(self):
+        """Create the best available USB transport."""
+        from .hid_device import PYUSB_AVAILABLE, HIDAPI_AVAILABLE
+        if PYUSB_AVAILABLE:
+            from .hid_device import PyUsbTransport
+            return PyUsbTransport(self._vid, self._pid)
+        elif HIDAPI_AVAILABLE:
+            from .hid_device import HidApiTransport
+            return HidApiTransport(self._vid, self._pid)
+        else:
+            raise ImportError(
+                "No USB backend available. Install pyusb or hidapi:\n"
+                "  pip install pyusb   (+ apt install libusb-1.0-0)\n"
+                "  pip install hidapi  (+ apt install libhidapi-dev)"
+            )
+
+    @property
+    def protocol_name(self) -> str:
+        return "led"
+
+    @property
+    def is_available(self) -> bool:
+        backends = _get_hid_backends()
+        return backends["pyusb"] or backends["hidapi"]
+
+    @property
+    def is_led(self) -> bool:
+        return True
+
+    @property
+    def handshake_info(self):
+        """Cached handshake info (None if not yet handshaked)."""
+        return self._handshake_info
+
+    def __repr__(self) -> str:
+        return f"LedProtocol(vid=0x{self._vid:04x}, pid=0x{self._pid:04x})"
+
+
+# =========================================================================
 # Backward-compatible aliases (old names still work)
 # =========================================================================
 
@@ -250,6 +431,7 @@ class HidProtocol(DeviceProtocol):
 DeviceSender = DeviceProtocol
 ScsiSender = ScsiProtocol
 HidSender = HidProtocol
+LedSender = LedProtocol
 
 
 # =========================================================================
@@ -299,10 +481,17 @@ class DeviceProtocolFactory:
             ValueError: If protocol is unknown.
         """
         protocol = getattr(device_info, 'protocol', 'scsi')
+        implementation = getattr(device_info, 'implementation', '')
 
         if protocol == 'scsi':
             return ScsiProtocol(device_info.path)
         elif protocol == 'hid':
+            # LED devices use a different protocol than LCD HID devices
+            if implementation == 'hid_led':
+                return LedProtocol(
+                    vid=device_info.vid,
+                    pid=device_info.pid,
+                )
             return HidProtocol(
                 vid=device_info.vid,
                 pid=device_info.pid,
@@ -361,6 +550,7 @@ DeviceSenderFactory = DeviceProtocolFactory
 PROTOCOL_NAMES = {
     "scsi": "SCSI (sg_raw)",
     "hid": "HID (USB bulk)",
+    "led": "LED (HID 64-byte)",
 }
 
 DEVICE_TYPE_NAMES = {
@@ -368,6 +558,8 @@ DEVICE_TYPE_NAMES = {
     2: "HID Type 2 (H)",
     3: "HID Type 3 (ALi)",
 }
+
+LED_DEVICE_TYPE_NAME = "RGB LED Controller"
 
 
 @dataclass
@@ -394,6 +586,10 @@ class ProtocolInfo:
     @property
     def is_hid(self) -> bool:
         return self.protocol == "hid"
+
+    @property
+    def is_led(self) -> bool:
+        return self.protocol == "led"
 
     @property
     def has_backend(self) -> bool:
@@ -465,6 +661,8 @@ def get_protocol_info(device_info=None) -> ProtocolInfo:
     protocol = getattr(device_info, 'protocol', 'scsi')
     device_type = getattr(device_info, 'device_type', 1)
 
+    implementation = getattr(device_info, 'implementation', '')
+
     if protocol == "scsi":
         active = "sg_raw" if backends["sg_raw"] else "none"
     elif protocol == "hid":
@@ -476,6 +674,18 @@ def get_protocol_info(device_info=None) -> ProtocolInfo:
             active = "none"
     else:
         active = "none"
+
+    # LED devices report as "led" protocol
+    if implementation == "hid_led":
+        return ProtocolInfo(
+            protocol="led",
+            device_type=1,
+            protocol_display=PROTOCOL_NAMES.get("led", "LED"),
+            device_type_display=LED_DEVICE_TYPE_NAME,
+            active_backend=active,
+            backends=backends,
+            transport_open=False,
+        )
 
     return ProtocolInfo(
         protocol=protocol,

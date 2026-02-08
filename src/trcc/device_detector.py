@@ -1,17 +1,20 @@
 #!/usr/bin/env python3
 """
-USB LCD Device Detector
-Finds Thermalright LCD devices and maps them to SCSI or HID devices.
+USB LCD/LED Device Detector
+Finds Thermalright LCD and LED devices and maps them to SCSI or HID devices.
 
 Supported devices (SCSI — stable):
 - Thermalright: VID=0x87CD, PID=0x70DB
 - Winbond:      VID=0x0416, PID=0x5406
 - ALi Corp:     VID=0x0402, PID=0x3922
 
-Supported devices (HID — testing, requires hid-protocol-testing branch):
+Supported devices (HID LCD — testing, requires hid-protocol-testing branch):
 - Winbond:      VID=0x0416, PID=0x5302  (Type 2)
 - ALi Corp:     VID=0x0418, PID=0x5303  (Type 3)
 - ALi Corp:     VID=0x0418, PID=0x5304  (Type 3)
+
+Supported devices (HID LED — RGB controllers, FormLED in Windows):
+- Winbond:      VID=0x0416, PID=0x8001  (64-byte reports)
 """
 
 import os
@@ -100,8 +103,20 @@ KNOWN_DEVICES = {
     },
 }
 
-# Non-LCD HID devices (RGB controllers) — NOT supported by TRCC Linux
-# VID=0x0416, PID=0x8001: RGB fan controllers (device1 in UCDevice.cs)
+# LED HID devices (RGB controllers — FormLED in Windows, not FormCZTV)
+# These use 64-byte HID reports for LED color control, not LCD image display.
+# device1: UsbHidDevice(1046, 32769) = 0x0416:0x8001, 64-byte packets
+KNOWN_LED_DEVICES = {
+    (0x0416, 0x8001): {
+        "vendor": "Winbond",
+        "product": "LED Controller (HID)",
+        "model": "AX120_DIGITAL",
+        "button_image": "A1AX120_DIGITAL",
+        "implementation": "hid_led",
+        "protocol": "hid",
+        "device_type": 1,
+    },
+}
 
 
 def run_command(cmd: List[str]) -> str:
@@ -139,11 +154,12 @@ def find_usb_devices() -> List[DetectedDevice]:
         vid = int(vid_str, 16)
         pid = int(pid_str, 16)
 
-        # Check if this is a known LCD device
-        if (vid, pid) not in KNOWN_DEVICES:
+        # Check if this is a known LCD or LED device
+        all_devices = {**KNOWN_DEVICES, **KNOWN_LED_DEVICES}
+        if (vid, pid) not in all_devices:
             continue
 
-        device_info = KNOWN_DEVICES[(vid, pid)]
+        device_info = all_devices[(vid, pid)]
 
         # Get USB path
         usb_path = f"{int(bus)}-{device}"

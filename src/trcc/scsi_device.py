@@ -164,6 +164,7 @@ def find_lcd_devices() -> List[Dict]:
                 'pid': dev.pid,
                 'protocol': 'scsi',
                 'device_type': 1,
+                'implementation': dev.implementation,
             })
         elif protocol == 'hid':
             # HID devices use USB VID:PID directly (no SCSI path)
@@ -182,6 +183,7 @@ def find_lcd_devices() -> List[Dict]:
                 'pid': dev.pid,
                 'protocol': 'hid',
                 'device_type': device_type,
+                'implementation': dev.implementation,
             })
 
     # Sort by path for stable ordinal assignment
