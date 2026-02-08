@@ -17,6 +17,8 @@ Native Linux port of the Thermalright LCD Control Center (Windows TRCC 2.0.3). C
 
 > **Note:** This project is under active development. Documentation and features may change. Use at your own risk — this is an unofficial community project, not affiliated with Thermalright.
 
+> **Distro support:** I develop and test on Fedora. The one-liners below cover many distros, but if something doesn't work on yours, please [open an issue](https://github.com/Lexonight1/thermalright-trcc-linux/issues) with your distro name and the error.
+
 ## Supported Devices
 
 Plug in your device and run `lsusb` in a terminal. Find the line with your device — the USB ID is the `xxxx:xxxx` after `ID`:
@@ -30,16 +32,13 @@ Bus 001 Device 008: ID 0416:5302 Winbond Electronics Corp. USBDISPLAY
 Match it to the tables below.
 
 **SCSI devices** — fully supported:
-
 | USB ID | Devices |
 |--------|---------|
 | `87CD:70DB` | FROZEN HORIZON PRO, FROZEN MAGIC PRO, FROZEN VISION V2, CORE VISION, ELITE VISION, AK120, AX120, PA120 DIGITAL, Wonder Vision |
 | `0416:5406` | LC1, LC2, LC3, LC5 (AIO pump heads) |
 | `0402:3922` | FROZEN WARFRAME, FROZEN WARFRAME SE |
 
-Resolutions: 240x240, 320x320, 480x480, 640x480
-
-**HID devices** — on [`hid-protocol-testing`](https://github.com/Lexonight1/thermalright-trcc-linux/tree/hid-protocol-testing) branch (187 tests, CI passing), testers wanted:
+**HID LCD devices** — experimental (563 tests, needs hardware testers), enable with `trcc --testing-hid gui`:
 
 | USB ID | Devices |
 |--------|---------|
@@ -47,11 +46,13 @@ Resolutions: 240x240, 320x320, 480x480, 640x480
 | `0418:5303` | TARAN ARMS |
 | `0418:5304` | TARAN ARMS |
 
-> **HID device?** Install from the testing branch instead:
-> ```bash
-> git clone -b hid-protocol-testing https://github.com/Lexonight1/thermalright-trcc-linux.git
-> ```
-> Already have stable? Switch with: `git fetch origin && git checkout hid-protocol-testing`
+**HID LED devices** — RGB LED control, enable with `trcc --testing-hid gui`:
+
+| USB ID | Devices |
+|--------|---------|
+| `0416:8001` | AX120 DIGITAL (LED mode) |
+
+> **HID device?** See the **[HID Testing Guide](doc/HID_TESTING.md)** — install normally, then use `trcc --testing-hid gui`. I don't have one of these devices, so I need testers.
 
 ## Install
 
@@ -61,8 +62,6 @@ Find your distro, copy the block, paste in terminal. After it finishes: **unplug
 
 > **`trcc: command not found`?** Open a new terminal — pip installs to `~/.local/bin` which needs a new shell session to appear on PATH. Or run directly: `PYTHONPATH=src python3 -m trcc.cli gui`
 
-> **Add to app menu:** `trcc install-desktop` — creates an application menu entry so you can launch TRCC from your desktop environment.
-
 If your distro doesn't package PyQt6, just drop it from the system install line — `pip install -e .` will pull it from PyPI automatically.
 
 See the **[Install Guide](doc/INSTALL_GUIDE.md)** for troubleshooting, optional deps, immutable distros, and more.
@@ -70,43 +69,43 @@ See the **[Install Guide](doc/INSTALL_GUIDE.md)** for troubleshooting, optional 
 ### Fedora / Nobara
 
 ```bash
-sudo dnf install sg3_utils python3-pyqt6 ffmpeg && git clone -b stable https://github.com/Lexonight1/thermalright-trcc-linux.git && cd thermalright-trcc-linux && pip install --break-system-packages -e . && sudo PYTHONPATH=src python3 -m trcc.cli setup-udev
+sudo dnf install sg3_utils python3-pyqt6 ffmpeg && git clone -b stable https://github.com/Lexonight1/thermalright-trcc-linux.git && cd thermalright-trcc-linux && pip install --break-system-packages -e . && sudo PYTHONPATH=src python3 -m trcc.cli setup-udev && trcc install-desktop
 ```
 
-### Ubuntu / Debian / Mint / Pop!_OS
+### Ubuntu / Debian / Mint / Pop!_OS / Zorin / elementary OS / Xubuntu
 
 ```bash
-sudo apt install sg3-utils python3-pyqt6 ffmpeg python3-pip && git clone -b stable https://github.com/Lexonight1/thermalright-trcc-linux.git && cd thermalright-trcc-linux && pip install --break-system-packages -e . && sudo PYTHONPATH=src python3 -m trcc.cli setup-udev
+sudo apt install sg3-utils python3-pyqt6 ffmpeg python3-pip && git clone -b stable https://github.com/Lexonight1/thermalright-trcc-linux.git && cd thermalright-trcc-linux && pip install --break-system-packages -e . && sudo PYTHONPATH=src python3 -m trcc.cli setup-udev && trcc install-desktop
 ```
 
 ### Arch / Manjaro / EndeavourOS / CachyOS / Garuda
 
 ```bash
-sudo pacman -S sg3_utils python-pyqt6 ffmpeg python-pip && git clone -b stable https://github.com/Lexonight1/thermalright-trcc-linux.git && cd thermalright-trcc-linux && pip install --break-system-packages -e . && sudo PYTHONPATH=src python3 -m trcc.cli setup-udev
+sudo pacman -S sg3_utils python-pyqt6 ffmpeg python-pip && git clone -b stable https://github.com/Lexonight1/thermalright-trcc-linux.git && cd thermalright-trcc-linux && pip install --break-system-packages -e . && sudo PYTHONPATH=src python3 -m trcc.cli setup-udev && trcc install-desktop
 ```
 
 ### openSUSE
 
 ```bash
-sudo zypper install sg3_utils python3-qt6 ffmpeg python3-pip && git clone -b stable https://github.com/Lexonight1/thermalright-trcc-linux.git && cd thermalright-trcc-linux && pip install --break-system-packages -e . && sudo PYTHONPATH=src python3 -m trcc.cli setup-udev
+sudo zypper install sg3_utils python3-qt6 ffmpeg python3-pip && git clone -b stable https://github.com/Lexonight1/thermalright-trcc-linux.git && cd thermalright-trcc-linux && pip install --break-system-packages -e . && sudo PYTHONPATH=src python3 -m trcc.cli setup-udev && trcc install-desktop
 ```
 
 ### Void Linux
 
 ```bash
-sudo xbps-install sg3_utils python3-PyQt6 ffmpeg python3-pip && git clone -b stable https://github.com/Lexonight1/thermalright-trcc-linux.git && cd thermalright-trcc-linux && pip install --break-system-packages -e . && sudo PYTHONPATH=src python3 -m trcc.cli setup-udev
+sudo xbps-install sg3_utils python3-PyQt6 ffmpeg python3-pip && git clone -b stable https://github.com/Lexonight1/thermalright-trcc-linux.git && cd thermalright-trcc-linux && pip install --break-system-packages -e . && sudo PYTHONPATH=src python3 -m trcc.cli setup-udev && trcc install-desktop
 ```
 
 ### Gentoo
 
 ```bash
-sudo emerge --ask sg3_utils dev-python/PyQt6 media-video/ffmpeg dev-python/pip && git clone -b stable https://github.com/Lexonight1/thermalright-trcc-linux.git && cd thermalright-trcc-linux && pip install --break-system-packages -e . && sudo PYTHONPATH=src python3 -m trcc.cli setup-udev
+sudo emerge --ask sg3_utils dev-python/PyQt6 media-video/ffmpeg dev-python/pip && git clone -b stable https://github.com/Lexonight1/thermalright-trcc-linux.git && cd thermalright-trcc-linux && pip install --break-system-packages -e . && sudo PYTHONPATH=src python3 -m trcc.cli setup-udev && trcc install-desktop
 ```
 
 ### Alpine
 
 ```bash
-sudo apk add sg3_utils py3-pyqt6 ffmpeg py3-pip python3 && git clone -b stable https://github.com/Lexonight1/thermalright-trcc-linux.git && cd thermalright-trcc-linux && pip install --break-system-packages -e . && sudo PYTHONPATH=src python3 -m trcc.cli setup-udev
+sudo apk add sg3_utils py3-pyqt6 ffmpeg py3-pip python3 && git clone -b stable https://github.com/Lexonight1/thermalright-trcc-linux.git && cd thermalright-trcc-linux && pip install --break-system-packages -e . && sudo PYTHONPATH=src python3 -m trcc.cli setup-udev && trcc install-desktop
 ```
 
 ### Bazzite / Fedora Atomic / Aurora / Bluefin
@@ -116,7 +115,7 @@ rpm-ostree install sg3_utils && echo "Reboot now, then run the next block" && sy
 ```
 After reboot:
 ```bash
-git clone -b stable https://github.com/Lexonight1/thermalright-trcc-linux.git && cd thermalright-trcc-linux && python3 -m venv ~/trcc-env && source ~/trcc-env/bin/activate && pip install -e . && sudo ~/trcc-env/bin/trcc setup-udev
+git clone -b stable https://github.com/Lexonight1/thermalright-trcc-linux.git && cd thermalright-trcc-linux && python3 -m venv ~/trcc-env && source ~/trcc-env/bin/activate && pip install -e . && sudo ~/trcc-env/bin/trcc setup-udev && trcc install-desktop
 ```
 Launch: `source ~/trcc-env/bin/activate && trcc gui`
 
@@ -124,7 +123,7 @@ Launch: `source ~/trcc-env/bin/activate && trcc gui`
 
 Switch to Desktop Mode, open Konsole:
 ```bash
-sudo steamos-readonly disable && sudo pacman -S --needed sg3_utils python-pip python-pyqt6 ffmpeg && git clone -b stable https://github.com/Lexonight1/thermalright-trcc-linux.git && cd thermalright-trcc-linux && pip install --break-system-packages -e . && sudo PYTHONPATH=src python3 -m trcc.cli setup-udev && sudo steamos-readonly enable
+sudo steamos-readonly disable && sudo pacman -S --needed sg3_utils python-pip python-pyqt6 ffmpeg && git clone -b stable https://github.com/Lexonight1/thermalright-trcc-linux.git && cd thermalright-trcc-linux && pip install --break-system-packages -e . && sudo PYTHONPATH=src python3 -m trcc.cli setup-udev && trcc install-desktop && sudo steamos-readonly enable
 ```
 
 ### NixOS
@@ -136,14 +135,14 @@ environment.systemPackages = with pkgs; [
   python3Packages.psutil sg3_utils ffmpeg p7zip
 ];
 services.udev.extraRules = ''
-  SUBSYSTEM=="scsi_generic", ATTRS{idVendor}=="87cd", ATTRS{idProduct}=="70db", MODE="0666"
-  SUBSYSTEM=="scsi_generic", ATTRS{idVendor}=="0416", ATTRS{idProduct}=="5406", MODE="0666"
-  SUBSYSTEM=="scsi_generic", ATTRS{idVendor}=="0402", ATTRS{idProduct}=="3922", MODE="0666"
+  SUBSYSTEM=="scsi_generic", ATTRS{idVendor}=="87cd", ATTRS{idProduct}=="70db", MODE="0660"
+  SUBSYSTEM=="scsi_generic", ATTRS{idVendor}=="0416", ATTRS{idProduct}=="5406", MODE="0660"
+  SUBSYSTEM=="scsi_generic", ATTRS{idVendor}=="0402", ATTRS{idProduct}=="3922", MODE="0660"
 '';
 ```
 Then:
 ```bash
-git clone -b stable https://github.com/Lexonight1/thermalright-trcc-linux.git && cd thermalright-trcc-linux && pip install --break-system-packages -e .
+git clone -b stable https://github.com/Lexonight1/thermalright-trcc-linux.git && cd thermalright-trcc-linux && pip install --break-system-packages -e . && trcc install-desktop
 ```
 
 ## Support
@@ -157,7 +156,7 @@ If this project helped you, consider buying me a coffee:
 - **Themes** — Local, cloud, masks, carousel mode, export/import as `.tr` files
 - **Media** — Video/GIF playback, video trimmer, image cropper, screen cast (X11 + Wayland)
 - **Editor** — Overlay text/sensors/date/time, font picker, dynamic scaling, eyedropper
-- **Hardware** — 77+ sensors, customizable dashboard, multi-device with per-device config
+- **Hardware** — 77+ sensors, customizable dashboard, multi-device with per-device config, RGB LED control
 - **Display** — 4 resolutions, 0/90/180/270 rotation, 3 brightness levels
 - **Extras** — 5 starter themes + 120 masks per resolution, 8 languages, system tray, auto-start
 
@@ -180,7 +179,7 @@ trcc download themes-320  # Download cloud themes
 | [Changelog](doc/CHANGELOG.md) | Version history |
 | [Architecture](doc/ARCHITECTURE.md) | Project layout and design |
 | [Technical Reference](doc/TECHNICAL_REFERENCE.md) | SCSI protocol and file formats |
-| [HID Testing Guide](https://github.com/Lexonight1/thermalright-trcc-linux/blob/hid-protocol-testing/doc/HID_TESTING.md) | HID device support (testers wanted) |
+| [HID Testing Guide](doc/HID_TESTING.md) | HID device support (testers wanted) |
 
 ## License
 

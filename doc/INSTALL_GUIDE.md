@@ -8,7 +8,7 @@ A beginner-friendly guide to getting Thermalright LCD Control Center running on 
 
 1. [What is TRCC?](#what-is-trcc)
 2. [Compatible Coolers](#compatible-coolers)
-3. [New to Linux?](#new-to-linux)
+3. [HID Device Support (Testing Branch)](#hid-device-support-testing-branch)
 4. [Prerequisites](#prerequisites)
 5. [Step 1 - Install System Dependencies](#step-1---install-system-dependencies)
    - [Fedora / RHEL / CentOS Stream / Rocky / Alma](#fedora--rhel--centos-stream--rocky--alma)
@@ -76,6 +76,21 @@ TRCC Linux works with these Thermalright products that have a built-in LCD displ
 
 ---
 
+## HID Device Support (Experimental)
+
+> **WE NEED TESTERS!** HID device support is implemented with 563 automated tests but **not validated with real hardware**. If you have an HID device, please test and report results at https://github.com/Lexonight1/thermalright-trcc-linux/issues
+
+Install TRCC normally using the one-liners above, then run with the `--testing-hid` flag:
+
+```bash
+trcc --testing-hid detect       # Check if your device is found
+trcc --testing-hid gui          # Launch the GUI with HID support
+```
+
+See the **[HID Testing Guide](HID_TESTING.md)** for supported devices and what to report.
+
+---
+
 > **New to Linux?** If you're coming from Windows or Mac, see [New to Linux?](NEW_TO_LINUX.md) for a quick primer on terminals, package managers, and other concepts used in this guide.
 
 ---
@@ -137,8 +152,8 @@ Covers: Fedora 39-43, RHEL 9+, CentOS Stream 9+, Rocky Linux 9+, AlmaLinux 9+
 # Required
 sudo dnf install python3-pip sg3_utils python3-pyqt6 ffmpeg
 
-# Optional (screen capture on Wayland, NVIDIA GPU sensors)
-sudo dnf install grim python3-gobject python3-dbus pipewire-devel
+# Optional (hardware sensors, screen capture on Wayland, NVIDIA GPU sensors)
+sudo dnf install lm_sensors grim python3-gobject python3-dbus pipewire-devel
 ```
 
 > **RHEL/Rocky/Alma note:** You may need to enable EPEL and CRB repositories for `ffmpeg` and `python3-pyqt6`:
@@ -158,8 +173,8 @@ Covers: Ubuntu 22.04+, Debian 12+, Linux Mint 21+, Pop!_OS 22.04+, Zorin OS 17+,
 # Required
 sudo apt install python3-pip python3-venv sg3-utils python3-pyqt6 ffmpeg
 
-# Optional (screen capture on Wayland, system tray)
-sudo apt install grim python3-gi python3-dbus python3-gst-1.0
+# Optional (hardware sensors, screen capture on Wayland, system tray)
+sudo apt install lm-sensors grim python3-gi python3-dbus python3-gst-1.0
 ```
 
 > **Debian 12 (Bookworm) note:** `python3-pyqt6` is available in the repo. On older Debian/Ubuntu releases where it's missing, use `pip install PyQt6`.
@@ -176,8 +191,8 @@ Covers: Arch Linux, Manjaro, EndeavourOS, CachyOS, Garuda Linux, Artix Linux, Ar
 # Required
 sudo pacman -S python-pip sg3_utils python-pyqt6 ffmpeg
 
-# Optional (screen capture on Wayland, NVIDIA GPU sensors)
-sudo pacman -S grim python-gobject python-dbus python-gst
+# Optional (hardware sensors, screen capture on Wayland, NVIDIA GPU sensors)
+sudo pacman -S lm_sensors grim python-gobject python-dbus python-gst
 ```
 
 > **CachyOS note:** CachyOS ships its own optimized repos. The package names are the same as Arch. If you use the CachyOS kernel, `sg3_utils` works out of the box.
@@ -194,8 +209,8 @@ Covers: openSUSE Tumbleweed, openSUSE Leap 15.5+, openSUSE MicroOS
 # Required
 sudo zypper install python3-pip sg3_utils python3-qt6 ffmpeg
 
-# Optional (screen capture on Wayland)
-sudo zypper install grim python3-gobject python3-dbus-python python3-gstreamer
+# Optional (hardware sensors, screen capture on Wayland)
+sudo zypper install sensors grim python3-gobject python3-dbus-python python3-gstreamer
 ```
 
 > **Leap note:** Leap's repos may have older PyQt6 versions. If you get import errors, use `pip install PyQt6` instead.
@@ -218,8 +233,8 @@ Nobara uses the same package manager as Fedora, with extra multimedia repos pre-
 # Required (ffmpeg is usually pre-installed on Nobara)
 sudo dnf install python3-pip sg3_utils python3-pyqt6 ffmpeg
 
-# Optional (screen capture on Wayland)
-sudo dnf install grim python3-gobject python3-dbus pipewire-devel
+# Optional (hardware sensors, screen capture on Wayland)
+sudo dnf install lm_sensors grim python3-gobject python3-dbus pipewire-devel
 ```
 
 ---
@@ -244,6 +259,7 @@ Edit `/etc/nixos/configuration.nix`:
     python3Packages.pillow
     python3Packages.psutil
     sg3_utils
+    lm_sensors
     ffmpeg
     p7zip
   ];
@@ -251,9 +267,9 @@ Edit `/etc/nixos/configuration.nix`:
   # Allow your user to access SCSI generic devices
   services.udev.extraRules = ''
     # Thermalright LCD displays
-    SUBSYSTEM=="scsi_generic", ATTRS{idVendor}=="87cd", ATTRS{idProduct}=="70db", MODE="0666"
-    SUBSYSTEM=="scsi_generic", ATTRS{idVendor}=="0416", ATTRS{idProduct}=="5406", MODE="0666"
-    SUBSYSTEM=="scsi_generic", ATTRS{idVendor}=="0402", ATTRS{idProduct}=="3922", MODE="0666"
+    SUBSYSTEM=="scsi_generic", ATTRS{idVendor}=="87cd", ATTRS{idProduct}=="70db", MODE="0660"
+    SUBSYSTEM=="scsi_generic", ATTRS{idVendor}=="0416", ATTRS{idProduct}=="5406", MODE="0660"
+    SUBSYSTEM=="scsi_generic", ATTRS{idVendor}=="0402", ATTRS{idProduct}=="3922", MODE="0660"
   '';
 }
 ```
@@ -284,8 +300,8 @@ Covers: Void Linux (glibc and musl)
 # Required
 sudo xbps-install sg3_utils python3-pip python3-PyQt6 ffmpeg
 
-# Optional (screen capture on Wayland)
-sudo xbps-install grim python3-gobject python3-dbus python3-gst
+# Optional (hardware sensors, screen capture on Wayland)
+sudo xbps-install lm_sensors grim python3-gobject python3-dbus python3-gst
 ```
 
 > **Void musl note:** Some Python packages may not have pre-built wheels for musl. You may need `python3-devel` and a C compiler to build them:
@@ -309,8 +325,8 @@ Covers: Gentoo Linux, Funtoo, Calculate Linux
 # Required
 sudo emerge --ask sg3_utils dev-python/pip dev-python/PyQt6 media-video/ffmpeg
 
-# Optional (screen capture on Wayland)
-sudo emerge --ask gui-apps/grim dev-python/pygobject dev-python/dbus-python
+# Optional (hardware sensors, screen capture on Wayland)
+sudo emerge --ask sys-apps/lm-sensors gui-apps/grim dev-python/pygobject dev-python/dbus-python
 ```
 
 > **USE flags:** Make sure your PyQt6 package has the `widgets` and `gui` USE flags enabled:
@@ -333,8 +349,8 @@ Covers: Alpine Linux 3.18+, postmarketOS
 # Required
 sudo apk add python3 py3-pip sg3_utils py3-pyqt6 ffmpeg
 
-# Optional
-sudo apk add grim py3-gobject3 py3-dbus
+# Optional (hardware sensors, screen capture on Wayland)
+sudo apk add lm-sensors grim py3-gobject3 py3-dbus
 ```
 
 > **Alpine note:** Alpine uses musl libc. If `py3-pyqt6` isn't available in your release, you'll need to install from pip with build dependencies:
@@ -356,8 +372,8 @@ sudo eopkg install sg3_utils python3-pip ffmpeg
 # PyQt6 (may need pip)
 pip install PyQt6
 
-# Optional (screen capture on Wayland)
-sudo eopkg install grim python3-gobject python3-dbus
+# Optional (hardware sensors, screen capture on Wayland)
+sudo eopkg install lm-sensors grim python3-gobject python3-dbus
 ```
 
 ---
@@ -373,8 +389,8 @@ sudo swupd bundle-add python3-basic devpkg-sg3_utils ffmpeg
 # PyQt6 via pip (not bundled in Clear Linux)
 pip install PyQt6
 
-# Optional
-sudo swupd bundle-add devpkg-pipewire
+# Optional (hardware sensors, screen capture on Wayland)
+sudo swupd bundle-add sysadmin-basic devpkg-pipewire
 ```
 
 > **Clear Linux note:** You may need to install `sg3_utils` from source or find it in an alternative bundle. Check `sudo swupd search sg3` for the current bundle name.
@@ -386,12 +402,15 @@ sudo swupd bundle-add devpkg-pipewire
 | Package | Why it's needed |
 |---------|----------------|
 | `python3-pip` | Installs Python packages (like TRCC itself) |
-| `sg3_utils` | Sends data to the LCD over USB (SCSI commands) — **required** |
+| `sg3_utils` | Sends data to the LCD over USB (SCSI commands) — **required for SCSI devices** |
+| `lm-sensors` / `lm_sensors` | Hardware sensor readings (CPU/GPU temps, fan speeds) — improves sensor accuracy |
 | `PyQt6` / `python3-pyqt6` | The graphical user interface (GUI) toolkit |
 | `ffmpeg` | Video and GIF playback on the LCD |
 | `p7zip` / `7zip` | Extracts bundled theme `.7z` archives (optional if `py7zr` is installed) |
 | `grim` | Screen capture on Wayland desktops (optional) |
 | `python3-gobject` / `python3-dbus` | PipeWire screen capture for GNOME/KDE Wayland (optional) |
+| `pyusb` + `libusb` | USB communication for HID LCD devices (optional, testing branch only) |
+| `hidapi` + `libhidapi` | Fallback USB backend for HID LCD devices (optional, testing branch only) |
 
 ---
 
@@ -443,6 +462,35 @@ pip install -e .
 > ```
 
 > **Distros that enforce this by default:** Fedora 38+, Ubuntu 23.04+, Debian 12+, Arch (with python 3.11+), openSUSE Tumbleweed, Void Linux
+
+### Ensure `~/.local/bin` is in your PATH
+
+When you install with `pip install`, the `trcc` command is placed in `~/.local/bin/`. On many distros this directory is **not** in your `PATH` by default, so the `trcc` command won't be found after a reboot.
+
+Add it to your shell config:
+
+```bash
+# Bash (~/.bashrc)
+echo 'export PATH="$HOME/.local/bin:$PATH"' >> ~/.bashrc
+source ~/.bashrc
+
+# Zsh (~/.zshrc) — default on Arch, Garuda, some Manjaro
+echo 'export PATH="$HOME/.local/bin:$PATH"' >> ~/.zshrc
+source ~/.zshrc
+
+# Fish (~/.config/fish/config.fish)
+fish_add_path ~/.local/bin
+```
+
+| Distro | `~/.local/bin` in PATH by default? |
+|--------|-----------------------------------|
+| Fedora | Yes (usually works without this step) |
+| Ubuntu / Debian | Conditionally — only if the directory exists at login time |
+| Arch / Manjaro / EndeavourOS | No |
+| openSUSE | No |
+| Void / Alpine | No |
+
+> **Tip:** You can verify with `echo $PATH | tr ':' '\n' | grep local`. If you see `~/.local/bin` (or `/home/yourname/.local/bin`), you're good.
 
 ---
 
@@ -1058,6 +1106,26 @@ trcc download themes-320   # Download 320x320 themes
 
 ## Troubleshooting
 
+### "trcc: command not found" after reboot
+
+**Cause:** `pip install` puts the `trcc` script in `~/.local/bin/`, which isn't in your shell's `PATH` on many distros. It may work right after install but disappear after a reboot.
+
+**Fix:** Add `~/.local/bin` to your PATH permanently:
+```bash
+# Bash
+echo 'export PATH="$HOME/.local/bin:$PATH"' >> ~/.bashrc
+source ~/.bashrc
+
+# Zsh (Arch, Garuda, some Manjaro)
+echo 'export PATH="$HOME/.local/bin:$PATH"' >> ~/.zshrc
+source ~/.zshrc
+
+# Fish
+fish_add_path ~/.local/bin
+```
+
+> **Note:** Fedora typically includes `~/.local/bin` in PATH automatically. Ubuntu/Debian add it conditionally in `~/.profile`, but only if the directory already exists at login time — so the first install may not take effect until a second reboot. Adding it to `~/.bashrc` avoids this race condition.
+
 ### "No compatible TRCC LCD device detected"
 
 **Cause:** The LCD isn't showing up as a SCSI device.
@@ -1243,6 +1311,44 @@ echo "options usb-storage quirks=87cd:70db:u,0416:5406:u,0402:3922:u" | sudo tee
 sudo update-initramfs -u  # Debian/Ubuntu
 # or
 sudo dracut --force       # Fedora/RHEL
+```
+
+### HID device detected but "No USB backend available"
+
+**Cause:** Neither `pyusb` nor `hidapi` is installed. HID devices need one of these.
+
+**Fix:**
+```bash
+# Install pyusb (preferred)
+pip install pyusb
+# Also need the system library:
+sudo apt install libusb-1.0-0-dev    # Debian/Ubuntu
+sudo dnf install libusb1-devel       # Fedora
+sudo pacman -S libusb                # Arch
+
+# Or install hidapi (alternative)
+pip install hidapi
+sudo apt install libhidapi-dev       # Debian/Ubuntu
+sudo dnf install hidapi-devel        # Fedora
+sudo pacman -S hidapi                # Arch
+```
+
+### HID device detected but "Permission denied" on USB
+
+**Cause:** udev rules not set up for HID USB devices, or missing group membership.
+
+**Fix:**
+```bash
+# Set up udev rules (covers both SCSI and HID)
+sudo PYTHONPATH=src python3 -m trcc.cli setup-udev
+# Unplug and replug USB cable
+
+# If that doesn't work, add the rule manually:
+echo 'SUBSYSTEM=="usb", ATTR{idVendor}=="0416", ATTR{idProduct}=="5302", MODE="0660"' | sudo tee -a /etc/udev/rules.d/99-trcc-lcd.rules
+echo 'SUBSYSTEM=="usb", ATTR{idVendor}=="0418", ATTR{idProduct}=="5303", MODE="0660"' | sudo tee -a /etc/udev/rules.d/99-trcc-lcd.rules
+echo 'SUBSYSTEM=="usb", ATTR{idVendor}=="0418", ATTR{idProduct}=="5304", MODE="0660"' | sudo tee -a /etc/udev/rules.d/99-trcc-lcd.rules
+sudo udevadm control --reload-rules
+# Unplug and replug USB cable
 ```
 
 ### NixOS: "trcc setup-udev" doesn't work
