@@ -15,14 +15,67 @@ Run `lsusb` and look for your VID:PID:
 
 ## How to test
 
-Install TRCC normally (see [README](../README.md#install)), then run with the `--testing-hid` flag:
+Find your distro, copy the block, paste in terminal. These install TRCC + HID dependencies (libusb, pyusb) in one shot. After it finishes: **unplug and replug the USB cable**, then **open a new terminal**.
+
+> **Already have TRCC installed?** Just run `pip install --break-system-packages pyusb` and then `trcc --testing-hid gui`.
+
+### Fedora / Nobara
+
+```bash
+sudo dnf install sg3_utils python3-pyqt6 ffmpeg libusb1-devel && git clone -b stable https://github.com/Lexonight1/thermalright-trcc-linux.git && cd thermalright-trcc-linux && pip install --break-system-packages -e . && pip install --break-system-packages pyusb && sudo PYTHONPATH=src python3 -m trcc.cli setup-udev && trcc install-desktop
+```
+
+### Ubuntu / Debian / Mint / Pop!_OS
+
+```bash
+sudo apt install sg3-utils python3-pyqt6 ffmpeg python3-pip libusb-1.0-0-dev && git clone -b stable https://github.com/Lexonight1/thermalright-trcc-linux.git && cd thermalright-trcc-linux && pip install --break-system-packages -e . && pip install --break-system-packages pyusb && sudo PYTHONPATH=src python3 -m trcc.cli setup-udev && trcc install-desktop
+```
+
+### Arch / Manjaro / EndeavourOS / CachyOS / Garuda
+
+```bash
+sudo pacman -S sg3_utils python-pyqt6 ffmpeg python-pip libusb && git clone -b stable https://github.com/Lexonight1/thermalright-trcc-linux.git && cd thermalright-trcc-linux && pip install --break-system-packages -e . && pip install --break-system-packages pyusb && sudo PYTHONPATH=src python3 -m trcc.cli setup-udev && trcc install-desktop
+```
+
+### openSUSE
+
+```bash
+sudo zypper install sg3_utils python3-qt6 ffmpeg python3-pip libusb-1_0-devel && git clone -b stable https://github.com/Lexonight1/thermalright-trcc-linux.git && cd thermalright-trcc-linux && pip install --break-system-packages -e . && pip install --break-system-packages pyusb && sudo PYTHONPATH=src python3 -m trcc.cli setup-udev && trcc install-desktop
+```
+
+### Void Linux
+
+```bash
+sudo xbps-install sg3_utils python3-PyQt6 ffmpeg python3-pip libusb-devel && git clone -b stable https://github.com/Lexonight1/thermalright-trcc-linux.git && cd thermalright-trcc-linux && pip install --break-system-packages -e . && pip install --break-system-packages pyusb && sudo PYTHONPATH=src python3 -m trcc.cli setup-udev && trcc install-desktop
+```
+
+### Gentoo
+
+```bash
+sudo emerge --ask sg3_utils dev-python/PyQt6 media-video/ffmpeg dev-python/pip dev-libs/libusb && git clone -b stable https://github.com/Lexonight1/thermalright-trcc-linux.git && cd thermalright-trcc-linux && pip install --break-system-packages -e . && pip install --break-system-packages pyusb && sudo PYTHONPATH=src python3 -m trcc.cli setup-udev && trcc install-desktop
+```
+
+### Alpine
+
+```bash
+sudo apk add sg3_utils py3-pyqt6 ffmpeg py3-pip python3 libusb-dev && git clone -b stable https://github.com/Lexonight1/thermalright-trcc-linux.git && cd thermalright-trcc-linux && pip install --break-system-packages -e . && pip install --break-system-packages pyusb && sudo PYTHONPATH=src python3 -m trcc.cli setup-udev && trcc install-desktop
+```
+
+### SteamOS (Steam Deck)
+
+Switch to Desktop Mode, open Konsole:
+```bash
+sudo steamos-readonly disable && sudo pacman -S --needed sg3_utils python-pip python-pyqt6 ffmpeg libusb && git clone -b stable https://github.com/Lexonight1/thermalright-trcc-linux.git && cd thermalright-trcc-linux && pip install --break-system-packages -e . && pip install --break-system-packages pyusb && sudo PYTHONPATH=src python3 -m trcc.cli setup-udev && trcc install-desktop && sudo steamos-readonly enable
+```
+
+### Then run with `--testing-hid`
 
 ```bash
 trcc --testing-hid detect       # Check if your device is found
 trcc --testing-hid gui          # Launch the GUI with HID support
 ```
 
-That's it — no branch switching needed. The `--testing-hid` flag enables HID device detection.
+> **`trcc: command not found`?** Open a new terminal — pip installs to `~/.local/bin` which needs a new shell session to appear on PATH.
 
 ## What to report
 

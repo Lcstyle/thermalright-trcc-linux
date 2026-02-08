@@ -17,6 +17,8 @@ Native Linux port of the Thermalright LCD Control Center (Windows TRCC 2.0.3). C
 
 > **Note:** This project is under active development. Documentation and features may change. Use at your own risk — this is an unofficial community project, not affiliated with Thermalright.
 
+> **Distro support:** I develop and test on Fedora. The one-liners below cover many distros, but if something doesn't work on yours, please [open an issue](https://github.com/Lexonight1/thermalright-trcc-linux/issues) with your distro name and the error.
+
 ## Supported Devices
 
 Plug in your device and run `lsusb` in a terminal. Find the line with your device — the USB ID is the `xxxx:xxxx` after `ID`:
