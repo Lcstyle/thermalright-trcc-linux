@@ -213,6 +213,12 @@ class TRCCMainWindowMVC(QMainWindow):
         self._on_device_poll()
         self._device_timer.start(5000)
 
+        # UCDevice auto-selects first device during _setup_ui(), but the signal
+        # fires before _connect_view_signals(). Re-trigger selection now that
+        # callbacks are wired so _active_device_key gets set and config persists.
+        if self.uc_device.selected_device and not self._active_device_key:
+            self._on_device_widget_clicked(self.uc_device.selected_device)
+
     def _apply_dark_theme(self):
         """Apply dark theme via QPalette (not stylesheet - blocks palette on children)."""
         palette = self.palette()
@@ -778,8 +784,9 @@ class TRCCMainWindowMVC(QMainWindow):
         self.rotation_combo.blockSignals(False)
         self.controller.set_rotation(rotation_index * 90)
 
-        # Restore per-device theme
+        # Restore per-device theme (or auto-load first available)
         saved_theme = cfg.get('theme_path')
+        theme_loaded = False
         if saved_theme:
             theme_path = Path(saved_theme)
             if theme_path.exists():
@@ -790,6 +797,18 @@ class TRCCMainWindowMVC(QMainWindow):
                     self.controller.themes.select_theme(theme)
                 else:
                     self._select_theme_from_path(theme_path)
+                theme_loaded = True
+
+        if not theme_loaded:
+            # Auto-load first local theme so config is always populated
+            # (ensures --last-one works after first GUI session)
+            w, h = device.resolution
+            theme_base = self._data_dir / f'Theme{w}{h}'
+            if theme_base.exists():
+                for item in sorted(theme_base.iterdir()):
+                    if item.is_dir() and (item / '00.png').exists():
+                        self._select_theme_from_path(item)
+                        break
 
         # Restore per-device carousel
         carousel = cfg.get('carousel')
@@ -965,6 +984,11 @@ class TRCCMainWindowMVC(QMainWindow):
     def _on_local_theme_clicked(self, theme_info: dict):
         """Forward local theme selection to controller."""
         self._select_theme_from_path(Path(theme_info.get('path', '')))
+        # Update name input so re-saving overwrites the same theme
+        name = theme_info.get('name', '')
+        if name.startswith('Custom_'):
+            name = name[len('Custom_'):]
+        self.theme_name_input.setText(name)
 
     def _on_cloud_theme_clicked(self, theme_info: dict):
         """Forward cloud theme selection to controller.
@@ -1345,8 +1369,8 @@ class TRCCMainWindowMVC(QMainWindow):
         if reply == QMessageBox.StandardButton.Yes:
             self.uc_theme_local.delete_theme(theme_info)
             # If deleted theme was the current one, clear preview
-            if (self.controller.current_theme and  # type: ignore[attr-defined]  # pyright: ignore[reportAttributeAccessIssue]
-                    getattr(self.controller.current_theme, 'path', None) == theme_info.get('path')):  # pyright: ignore[reportAttributeAccessIssue]
+            if (self.controller.current_theme_path and
+                    str(self.controller.current_theme_path) == theme_info.get('path')):
                 self.controller.current_image = None
                 self.uc_preview.set_image(None)
             self.uc_preview.set_status(f"Deleted: {name}")
@@ -1737,8 +1761,10 @@ class TRCCMainWindowMVC(QMainWindow):
                 else:
                     self.controller.devices.select_device(device)
                     self.uc_preview.set_status(f"Device: {device.path}")
-        except (ImportError, Exception):
+        except ImportError:
             pass
+        except Exception as e:
+            print(f"[device_poll] {e}")
 
     def _on_rotation_change(self, index):
         """Handle rotation combobox change (Windows UpDateUCComboBox1).
