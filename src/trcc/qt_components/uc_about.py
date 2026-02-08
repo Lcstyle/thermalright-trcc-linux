@@ -74,9 +74,11 @@ def _set_autostart(enabled: bool):
     if enabled:
         _AUTOSTART_DIR.mkdir(parents=True, exist_ok=True)
         _AUTOSTART_FILE.write_text(_make_desktop_entry())
+        print(f"[+] Autostart enabled: {_AUTOSTART_FILE}")
     else:
         if _AUTOSTART_FILE.exists():
             _AUTOSTART_FILE.unlink()
+        print(f"[-] Autostart disabled")
 
 
 class UCAbout(BasePanel):
