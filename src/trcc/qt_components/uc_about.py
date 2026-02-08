@@ -81,6 +81,35 @@ def _set_autostart(enabled: bool):
         print(f"[-] Autostart disabled")
 
 
+def ensure_autostart():
+    """Auto-enable autostart on first launch (matches Windows KaijiQidong).
+
+    On first launch: creates .desktop file and marks config as configured.
+    On subsequent launches: refreshes .desktop if Exec path changed.
+    Returns the current autostart state (bool).
+    """
+    from ..paths import load_config, save_config
+
+    config = load_config()
+
+    if not config.get('autostart_configured'):
+        # First launch — auto-enable (like Windows registry auto-add)
+        _set_autostart(True)
+        config['autostart_configured'] = True
+        save_config(config)
+        return True
+
+    if _AUTOSTART_FILE.exists():
+        # Refresh .desktop in case Exec path changed (like Windows path mismatch check)
+        current = _AUTOSTART_FILE.read_text()
+        expected = _make_desktop_entry()
+        if current != expected:
+            _AUTOSTART_FILE.write_text(expected)
+            print(f"[~] Autostart refreshed: {_AUTOSTART_FILE}")
+
+    return _is_autostart_enabled()
+
+
 class UCAbout(BasePanel):
     """
     Control Center panel matching Windows UCAbout.

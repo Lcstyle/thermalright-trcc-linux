@@ -57,7 +57,7 @@ from ..sensor_enumerator import SensorEnumerator
 from .assets import Assets, load_pixmap
 from .base import create_image_button, set_background_pixmap
 from .constants import Colors, Layout, Sizes, Styles
-from .uc_about import UCAbout
+from .uc_about import UCAbout, ensure_autostart
 from .uc_activity_sidebar import UCActivitySidebar
 from .uc_device import UCDevice
 from .uc_image_cut import UCImageCut
@@ -200,6 +200,11 @@ class TRCCMainWindowMVC(QMainWindow):
         self.uc_system_info.set_temp_unit(saved_unit)
         if saved_unit == 1:
             self.uc_about._set_temp('F')
+
+        # Auto-enable autostart on first launch (matches Windows KaijiQidong)
+        autostart_state = ensure_autostart()
+        self.uc_about._autostart = autostart_state
+        self.uc_about.startup_btn.setChecked(autostart_state)
 
         # System tray icon
         self._setup_systray()

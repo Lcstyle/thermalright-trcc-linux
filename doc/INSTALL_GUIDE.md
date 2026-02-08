@@ -1009,7 +1009,7 @@ Shows your connected Thermalright cooler(s). Click a device to select it. The bl
 Each device remembers its own settings (theme, brightness, rotation). Switching devices restores that device's configuration automatically.
 
 - **Sensor** button: Opens a live system info display
-- **About** button: Settings (LCD resolution, language, auto-start, temperature units)
+- **About** button: Settings (LCD resolution, language, auto-start, temperature units). Auto-start is enabled automatically on first launch — it creates `~/.config/autostart/trcc.desktop` which runs `trcc --last-one` on login to send the last-used theme to your device without opening the GUI.
 
 ### Top Tabs
 
