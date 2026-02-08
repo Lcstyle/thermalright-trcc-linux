@@ -867,6 +867,17 @@ class FormCZTVController:
                 if f.is_file():
                     shutil.copy2(str(f), str(theme_path / f.name))
 
+            # Write config.json alongside config1.dc for --last-one resume
+            import json
+            config_json = {
+                'name': safe_name,
+                'resolution': [self.lcd_width, self.lcd_height],
+                'rotation': self.rotation,
+                'brightness': self.brightness,
+            }
+            with open(str(theme_path / 'config.json'), 'w') as f:
+                json.dump(config_json, f, indent=2)
+
             self.current_theme_path = theme_path
             return True, f"Saved: {safe_name}"
         except Exception as e:

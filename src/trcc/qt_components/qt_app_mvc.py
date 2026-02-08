@@ -1164,6 +1164,10 @@ class TRCCMainWindowMVC(QMainWindow):
             theme_dir = self._data_dir / f'Theme{w}{h}'
             self.uc_theme_local.set_theme_directory(theme_dir)
             self.uc_theme_local.load_themes()
+            # Persist saved theme path for --last-one resume
+            if self._active_device_key and self.controller.current_theme_path:
+                save_device_setting(self._active_device_key, 'theme_path',
+                                    str(self.controller.current_theme_path))
 
     def _on_export_clicked(self):
         """Handle export theme button click."""
