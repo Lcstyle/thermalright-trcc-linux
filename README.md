@@ -180,6 +180,8 @@ trcc download themes-320  # Download cloud themes
 | [Architecture](doc/ARCHITECTURE.md) | Project layout and design |
 | [Technical Reference](doc/TECHNICAL_REFERENCE.md) | SCSI protocol and file formats |
 | [HID Testing Guide](doc/HID_TESTING.md) | HID device support (testers wanted) |
+| [Supported Devices](doc/SUPPORTED_DEVICES.md) | Full device list with USB IDs |
+| [Development Status](doc/DEVELOPMENT_STATUS.md) | What's stable, in progress, and planned |
 
 ## License
 
