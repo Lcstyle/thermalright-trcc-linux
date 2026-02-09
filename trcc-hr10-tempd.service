@@ -19,8 +19,8 @@ After=default.target
 
 [Service]
 Type=simple
-ExecStart=trcc hr10-tempd --drive "9100"
-Restart=on-failure
+ExecStart=trcc hr10-tempd --drive "9100" --unit F
+Restart=always
 RestartSec=5
 
 [Install]
